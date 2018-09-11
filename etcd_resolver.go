@@ -50,10 +50,10 @@ func (this *Resolver) ResolveNow(option resolver.ResolveNowOption) {
 func (this *Resolver) Close() {
 }
 
-func (this *Resolver) Register(path, addr string, ttl int64) (key string, err error) {
-	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(path, addr), addr, ttl)
+func (this *Resolver) Register(service, addr string, ttl int64) (key string, err error) {
+	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(service, addr), addr, ttl)
 }
 
-func (this *Resolver) UnRegister(path, addr string) (err error) {
-	return this.c.RevokeWithKey(this.scheme + "://" + filepath.Join(path, addr))
+func (this *Resolver) UnRegister(service, addr string) (err error) {
+	return this.c.RevokeWithKey(this.scheme + "://" + filepath.Join(service, addr))
 }
