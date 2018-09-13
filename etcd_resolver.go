@@ -63,6 +63,6 @@ func (this *ETCDResolver) RegisterService(service, node, addr string, ttl int64)
 	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(service, node), addr, ttl)
 }
 
-func (this *ETCDResolver) UnRegisterService(service, node, addr string) (err error) {
+func (this *ETCDResolver) UnRegisterService(service, node string) (err error) {
 	return this.c.RevokeWithKey(this.scheme + "://" + filepath.Join(service, node))
 }
