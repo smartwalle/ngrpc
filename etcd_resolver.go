@@ -50,10 +50,10 @@ func (this *ETCDResolver) ResolveNow(option resolver.ResolveNowOption) {
 func (this *ETCDResolver) Close() {
 }
 
-func (this *ETCDResolver) RegisterService(service, node, addr string, ttl int64) (key string, err error) {
-	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(service, node), addr, ttl)
+func (this *ETCDResolver) RegisterService(domain, service, node, addr string, ttl int64) (key string, err error) {
+	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(domain, service, node), addr, ttl)
 }
 
-func (this *ETCDResolver) UnRegisterService(service, node string) (err error) {
-	return this.c.RevokeWithKey(this.scheme + "://" + filepath.Join(service, node))
+func (this *ETCDResolver) UnRegisterService(domain, service, node string) (err error) {
+	return this.c.RevokeWithKey(this.scheme + "://" + filepath.Join(domain, service, node))
 }

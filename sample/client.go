@@ -23,7 +23,7 @@ func main() {
 	resolver.Register(r)
 
 	// dial
-	conn, err := grpc.Dial("etcd://mine/my_service", grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
+	conn, err := grpc.Dial("etcd://service/hello", grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
 	if err != nil {
 		fmt.Println(err)
 		return
