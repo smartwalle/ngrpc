@@ -27,7 +27,7 @@ func main() {
 	// 注册服务
 	var c, _ = etcd4go.NewClient(config)
 	var r = grpc4go.NewETCDResolver(c)
-	fmt.Println(r.RegisterService("my_service", "node1", addr, 5))
+	fmt.Println(r.RegisterService("mine/my_service", "node1", addr, 5))
 
 	server := grpc.NewServer()
 	hw.RegisterFirstGRPCServer(server, &service{})

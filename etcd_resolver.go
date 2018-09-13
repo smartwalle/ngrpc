@@ -8,26 +8,32 @@ import (
 )
 
 const (
-	k_SCHEME_ETCD = "etcdv3"
+	k_DEFAULT_SCHEME = "etcd"
 )
 
 type ETCDResolver struct {
-	c *etcd4go.Client
+	scheme string
+	c      *etcd4go.Client
 }
 
 func NewETCDResolver(c *etcd4go.Client) *ETCDResolver {
-	return &ETCDResolver{c: c}
+	return NewETCDResolverWithScheme(k_DEFAULT_SCHEME, c)
+}
+
+func NewETCDResolverWithScheme(scheme string, c *etcd4go.Client) *ETCDResolver {
+	return &ETCDResolver{scheme: scheme, c: c}
 }
 
 func (this *ETCDResolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
-	watchInfo := this.c.Watch(target.Endpoint, clientv3.WithPrefix())
+	var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
+	watchInfo := this.c.Watch(key, clientv3.WithPrefix())
 
 	watchInfo.Handle(func(eventType, key, path string, value []byte) {
 		var paths = watchInfo.GetPaths()
 		var addrList = make([]resolver.Address, 0, len(paths))
 		for _, value := range paths {
-			var add = resolver.Address{Addr: string(value)}
-			addrList = append(addrList, add)
+			var addr = resolver.Address{Addr: string(value)}
+			addrList = append(addrList, addr)
 		}
 		cc.NewAddress(addrList)
 	})
@@ -35,7 +41,7 @@ func (this *ETCDResolver) Build(target resolver.Target, cc resolver.ClientConn, 
 }
 
 func (this *ETCDResolver) Scheme() string {
-	return k_SCHEME_ETCD
+	return this.scheme
 }
 
 func (this *ETCDResolver) ResolveNow(option resolver.ResolveNowOption) {
@@ -50,13 +56,13 @@ func (this *ETCDResolver) Register() {
 
 func (this *ETCDResolver) RegisterDefault() {
 	resolver.Register(this)
-	resolver.SetDefaultScheme(this.Scheme())
+	resolver.SetDefaultScheme(this.scheme)
 }
 
 func (this *ETCDResolver) RegisterService(service, node, addr string, ttl int64) (key string, err error) {
-	return this.c.RegisterWithKey(filepath.Join(service, node), addr, ttl)
+	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(service, node), addr, ttl)
 }
 
 func (this *ETCDResolver) UnRegisterService(service, node, addr string) (err error) {
-	return this.c.RevokeWithKey(filepath.Join(service, node))
+	return this.c.RevokeWithKey(this.scheme + "://" + filepath.Join(service, node))
 }

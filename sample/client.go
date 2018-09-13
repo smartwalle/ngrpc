@@ -19,10 +19,10 @@ func main() {
 	// 注册命名解析及服务发现
 	var c, _ = etcd4go.NewClient(config)
 	var r = grpc4go.NewETCDResolver(c)
-	r.RegisterDefault()
+	r.Register()
 
 	// dial
-	conn, err := grpc.Dial("my_service", grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
+	conn, err := grpc.Dial("etcd://mine/my_service", grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
 	if err != nil {
 		fmt.Println(err)
 		return
