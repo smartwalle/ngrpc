@@ -8,52 +8,61 @@ import (
 )
 
 const (
-	k_DEFAULT_SCHEME = "grpc"
+	k_DEFAULT_SCHEME = "etcd"
 )
 
-type Resolver struct {
+type ETCDResolver struct {
 	scheme string
 	c      *etcd4go.Client
 }
 
-func NewResolver(etcd *etcd4go.Client) *Resolver {
-	return NewResolverWithScheme(k_DEFAULT_SCHEME, etcd)
+func NewETCDResolver(c *etcd4go.Client) *ETCDResolver {
+	return NewETCDResolverWithScheme(k_DEFAULT_SCHEME, c)
 }
 
-func NewResolverWithScheme(scheme string, c *etcd4go.Client) *Resolver {
-	return &Resolver{scheme: scheme, c: c}
+func NewETCDResolverWithScheme(scheme string, c *etcd4go.Client) *ETCDResolver {
+	return &ETCDResolver{scheme: scheme, c: c}
 }
 
-func (this *Resolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
+func (this *ETCDResolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
 	var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
 	watchInfo := this.c.Watch(key, clientv3.WithPrefix())
 
 	watchInfo.Handle(func(eventType, key, path string, value []byte) {
 		var paths = watchInfo.GetPaths()
-		var addList = make([]resolver.Address, 0, len(paths))
+		var addrList = make([]resolver.Address, 0, len(paths))
 		for _, value := range paths {
-			var add = resolver.Address{Addr: string(value)}
-			addList = append(addList, add)
+			var addr = resolver.Address{Addr: string(value)}
+			addrList = append(addrList, addr)
 		}
-		cc.NewAddress(addList)
+		cc.NewAddress(addrList)
 	})
 	return this, nil
 }
 
-func (this *Resolver) Scheme() string {
+func (this *ETCDResolver) Scheme() string {
 	return this.scheme
 }
 
-func (this *Resolver) ResolveNow(option resolver.ResolveNowOption) {
+func (this *ETCDResolver) ResolveNow(option resolver.ResolveNowOption) {
 }
 
-func (this *Resolver) Close() {
+func (this *ETCDResolver) Close() {
 }
 
-func (this *Resolver) Register(service, node, addr string, ttl int64) (key string, err error) {
+func (this *ETCDResolver) Register() {
+	resolver.Register(this)
+}
+
+func (this *ETCDResolver) RegisterDefault() {
+	resolver.Register(this)
+	resolver.SetDefaultScheme(this.scheme)
+}
+
+func (this *ETCDResolver) RegisterService(service, node, addr string, ttl int64) (key string, err error) {
 	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(service, node), addr, ttl)
 }
 
-func (this *Resolver) UnRegister(service, node, addr string) (err error) {
+func (this *ETCDResolver) UnRegisterService(service, node, addr string) (err error) {
 	return this.c.RevokeWithKey(this.scheme + "://" + filepath.Join(service, node))
 }
