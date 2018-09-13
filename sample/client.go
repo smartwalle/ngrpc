@@ -8,6 +8,7 @@ import (
 	"github.com/smartwalle/grpc4go/sample/hw"
 	"go.etcd.io/etcd/clientv3"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/resolver"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func main() {
 	// 注册命名解析及服务发现
 	var c, _ = etcd4go.NewClient(config)
 	var r = grpc4go.NewETCDResolver(c)
-	r.Register()
+	resolver.Register(r)
 
 	// dial
 	conn, err := grpc.Dial("etcd://mine/my_service", grpc.WithBalancerName("round_robin"), grpc.WithInsecure())

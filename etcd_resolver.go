@@ -50,15 +50,6 @@ func (this *ETCDResolver) ResolveNow(option resolver.ResolveNowOption) {
 func (this *ETCDResolver) Close() {
 }
 
-func (this *ETCDResolver) Register() {
-	resolver.Register(this)
-}
-
-func (this *ETCDResolver) RegisterDefault() {
-	resolver.Register(this)
-	resolver.SetDefaultScheme(this.scheme)
-}
-
 func (this *ETCDResolver) RegisterService(service, node, addr string, ttl int64) (key string, err error) {
 	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(service, node), addr, ttl)
 }
