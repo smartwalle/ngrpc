@@ -20,8 +20,7 @@ func NewETCDResolver(c *etcd4go.Client) *ETCDResolver {
 }
 
 func (this *ETCDResolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
-	var key = target.Endpoint
-	watchInfo := this.c.Watch(key, clientv3.WithPrefix())
+	watchInfo := this.c.Watch(target.Endpoint, clientv3.WithPrefix())
 
 	watchInfo.Handle(func(eventType, key, path string, value []byte) {
 		var paths = watchInfo.GetPaths()
