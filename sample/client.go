@@ -22,19 +22,18 @@ func main() {
 	var r = grpc4go.NewETCDResolver(c)
 	resolver.Register(r)
 
-	// dial
-	conn, err := grpc.Dial("etcd://service/hello", grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer conn.Close()
-
-	cc := hw.NewFirstGRPCClient(conn)
-
 	for {
+		conn, err := grpc.Dial("etcd://service/hello", grpc.WithBalancerName("round_robin"), grpc.WithInsecure())
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		cc := hw.NewFirstGRPCClient(conn)
 		time.Sleep(time.Second * 1)
 		rsp, err := cc.FirstCall(context.Background(), &hw.FirstRequest{Name: "Yang"})
+		conn.Close()
+
 		if err != nil {
 			fmt.Println(err)
 			continue
