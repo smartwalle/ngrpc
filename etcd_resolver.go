@@ -49,7 +49,7 @@ func (this *ETCDResolver) ResolveNow(option resolver.ResolveNowOption) {
 }
 
 func (this *ETCDResolver) Close() {
-	this.watchInfo.Cancel()
+	this.watchInfo.Close()
 }
 
 func (this *ETCDResolver) RegisterService(domain, service, node, addr string, ttl int64) (leaseId int64, key string, err error) {
