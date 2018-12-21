@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	k_DEFAULT_SCHEME = "etcd"
+	kDefaultScheme = "etcd"
 )
 
 type ETCDResolver struct {
@@ -18,7 +18,7 @@ type ETCDResolver struct {
 }
 
 func NewETCDResolver(c *etcd4go.Client) *ETCDResolver {
-	return NewETCDResolverWithScheme(k_DEFAULT_SCHEME, c)
+	return NewETCDResolverWithScheme(kDefaultScheme, c)
 }
 
 func NewETCDResolverWithScheme(scheme string, c *etcd4go.Client) *ETCDResolver {
@@ -55,9 +55,14 @@ func (this *ETCDResolver) Close() {
 }
 
 func (this *ETCDResolver) RegisterService(domain, service, node, addr string, ttl int64) (leaseId int64, key string, err error) {
-	return this.c.RegisterWithKey(this.scheme+"://"+filepath.Join(domain, service, node), addr, ttl)
+	return this.c.RegisterWithKey(this.GetServicePath(domain, service, node), addr, ttl)
 }
 
 func (this *ETCDResolver) UnRegisterService(leaseId int64) (err error) {
 	return this.c.Revoke(leaseId)
+}
+
+func (this *ETCDResolver) GetServicePath(domain, service, node string) string {
+	var target = this.scheme + "://" + filepath.Join(domain, service, node)
+	return target
 }
