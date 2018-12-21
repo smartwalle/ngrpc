@@ -22,18 +22,20 @@ func main() {
 	var r = grpc4go.NewETCDResolver(c)
 	resolver.Register(r)
 
-	var p = grpc4go.NewPool(r.GetServicePath("service", "hello", ""), 1, 1, grpc.WithInsecure())
+	var h = grpc4go.NewPoolHub()
+	h.AddPool("hello", grpc4go.NewPool(r.GetServicePath("service", "hello", ""), 2, 1, grpc.WithInsecure()))
 
-	var i = 0
 	for {
+		var p = h.GetPool("hello")
+
 		c := p.GetConn()
 
 		fmt.Printf("%p \n", *&c)
 
 		cc := hw.NewFirstGRPCClient(c)
-		time.Sleep(time.Second * 1)
 		rsp, err := cc.FirstCall(context.Background(), &hw.FirstRequest{Name: "Yang"})
 
+		time.Sleep(time.Second * 1)
 		p.Release(c)
 
 		if err != nil {
@@ -41,7 +43,5 @@ func main() {
 			continue
 		}
 		fmt.Println("rand", rsp.Message)
-
-		i++
 	}
 }
