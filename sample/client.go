@@ -19,7 +19,7 @@ func main() {
 
 	// 注册命名解析及服务发现
 	var c, _ = etcd4go.NewClient(config)
-	var r = grpc4go.NewETCDResolverWithConfig(c)
+	var r = grpc4go.NewETCDResolver(c)
 	resolver.Register(r)
 
 	for {
