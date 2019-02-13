@@ -21,6 +21,11 @@ func NewETCDResolver(c *etcd4go.Client) *ETCDResolver {
 	return NewETCDResolverWithScheme(kDefaultScheme, c)
 }
 
+func NewETCDResolverWithConfig(cfg clientv3.Config) *ETCDResolver {
+	var c, _ = etcd4go.NewClient(cfg)
+	return NewETCDResolver(c)
+}
+
 func NewETCDResolverWithScheme(scheme string, c *etcd4go.Client) *ETCDResolver {
 	return &ETCDResolver{scheme: scheme, c: c}
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/smartwalle/etcd4go"
 	"github.com/smartwalle/grpc4go"
 	"github.com/smartwalle/grpc4go/sample/hw"
 	"go.etcd.io/etcd/clientv3"
@@ -18,8 +17,7 @@ func main() {
 	config.Endpoints = []string{"localhost:2379"}
 
 	// 注册命名解析及服务发现
-	var c, _ = etcd4go.NewClient(config)
-	var r = grpc4go.NewETCDResolver(c)
+	var r = grpc4go.NewETCDResolverWithConfig(config)
 	resolver.Register(r)
 
 	var h = grpc4go.NewPoolHub()

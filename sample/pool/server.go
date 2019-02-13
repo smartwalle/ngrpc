@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/smartwalle/etcd4go"
 	"github.com/smartwalle/grpc4go"
 	"github.com/smartwalle/grpc4go/sample/hw"
 	"go.etcd.io/etcd/clientv3"
@@ -20,13 +19,12 @@ func main() {
 		return
 	}
 
-	//// 初始化 etcd 连接配置文件
+	// 初始化 etcd 连接配置文件
 	var config = clientv3.Config{}
 	config.Endpoints = []string{"localhost:2379"}
 
 	// 注册服务
-	var c, _ = etcd4go.NewClient(config)
-	var r = grpc4go.NewETCDResolver(c)
+	var r = grpc4go.NewETCDResolverWithConfig(config)
 	fmt.Println(r.RegisterService("service", "hello", "node1", addr, 5))
 
 	server := grpc.NewServer()
