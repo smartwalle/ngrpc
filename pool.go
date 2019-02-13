@@ -91,6 +91,15 @@ func (this *Pool) Target() string {
 	return this.target
 }
 
+func (this *Pool) Close() error {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+	for _, p := range this.hub.ps {
+		p.Close()
+	}
+	return this.Pool.Close()
+}
+
 // --------------------------------------------------------------------------------
 type PoolHub struct {
 	mu sync.Mutex
