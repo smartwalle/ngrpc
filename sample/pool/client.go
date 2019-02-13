@@ -8,6 +8,7 @@ import (
 	"go.etcd.io/etcd/clientv3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/resolver"
+	"os"
 	"time"
 )
 
@@ -23,23 +24,29 @@ func main() {
 	var h = grpc4go.NewPoolHub()
 	h.AddPool("hello", grpc4go.NewPool(r.GetServicePath("service", "hello", ""), 2, 1, grpc.WithInsecure()))
 
+	go req(h.GetPool("hello"), "")
+	go req(h.GetPool("hello"), "node1")
+	go req(h.GetPool("hello"), "node2")
+
+	select {}
+}
+
+func req(p *grpc4go.Pool, node string) {
 	for {
-		var p = h.GetPool("hello")
-
-		c := p.GetConn()
-
-		fmt.Printf("%p \n", *&c)
+		c := p.GetConn(node)
 
 		cc := hw.NewFirstGRPCClient(c)
 		rsp, err := cc.FirstCall(context.Background(), &hw.FirstRequest{Name: "Yang"})
 
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Microsecond * 100)
 		p.Release(c)
 
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(node, err)
+			os.Exit(-1)
 			continue
 		}
-		fmt.Println("rand", rsp.Message)
+
+		fmt.Printf("%s --- %s --- %p --- %s \n", node, c.Target(), *&c, rsp.Message)
 	}
 }

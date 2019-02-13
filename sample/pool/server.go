@@ -10,7 +10,7 @@ import (
 	"net"
 )
 
-var addr = ":5005"
+var addr = ":5006"
 
 func main() {
 	listener, err := net.Listen("tcp", addr)
@@ -25,7 +25,7 @@ func main() {
 
 	// 注册服务
 	var r = grpc4go.NewETCDResolverWithConfig(config)
-	fmt.Println(r.RegisterService("service", "hello", "node1", addr, 5))
+	fmt.Println(r.RegisterService("service", "hello", "node2", addr, 5))
 
 	server := grpc.NewServer()
 	hw.RegisterFirstGRPCServer(server, &service{})
