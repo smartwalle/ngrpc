@@ -60,10 +60,10 @@ func (this *ETCDResolver) Close() {
 }
 
 func (this *ETCDResolver) RegisterService(domain, service, node, addr string, ttl int64) (leaseId int64, key string, err error) {
-	return this.c.RegisterWithKey(this.GetServicePath(domain, service, node), addr, ttl)
+	return this.c.Register(this.GetServicePath(domain, service, node), addr, ttl)
 }
 
-func (this *ETCDResolver) UnRegisterService(leaseId int64) (err error) {
+func (this *ETCDResolver) DeregisterService(leaseId int64) (err error) {
 	return this.c.Revoke(leaseId)
 }
 
