@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/coreos/etcd/clientv3"
+	"github.com/smartwalle/grpc4go/cmd/hw"
 	"github.com/smartwalle/grpc4go/etcd"
-	"github.com/smartwalle/grpc4go/etcd/cmd/hw"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -26,9 +26,8 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
 	var r = etcd.NewRegistry(etcdClient)
-	fmt.Println(r.Register("game", "user", "node1", addr, 5))
+	r.Register("game", "user", "node1", addr, 5)
 
 	server := grpc.NewServer()
 	hw.RegisterFirstGRPCServer(server, &service{})

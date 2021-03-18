@@ -1,8 +1,8 @@
 package etcd
 
 import (
-	"github.com/coreos/etcd/clientv3"
 	"github.com/smartwalle/etcd4go"
+	"go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
 	"path/filepath"
 )
@@ -28,7 +28,7 @@ func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
 	return nResolver
 }
 
-func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOption) (resolver.Resolver, error) {
+func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 	this.clientConn = cc
 	var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
 	this.watcher = this.client.Watch(key, this.watch, clientv3.WithPrefix())
@@ -49,7 +49,7 @@ func (this *Registry) Scheme() string {
 	return this.scheme
 }
 
-func (this *Registry) ResolveNow(option resolver.ResolveNowOption) {
+func (this *Registry) ResolveNow(option resolver.ResolveNowOptions) {
 }
 
 func (this *Registry) Close() {
