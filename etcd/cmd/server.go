@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/smartwalle/grpc4go"
-	"github.com/smartwalle/grpc4go/sample/hw"
-	"go.etcd.io/etcd/clientv3"
+	"github.com/coreos/etcd/clientv3"
+	"github.com/smartwalle/grpc4go/etcd"
+	"github.com/smartwalle/grpc4go/etcd/cmd/hw"
 	"google.golang.org/grpc"
 	"net"
 )
 
-var addr = ":5006"
+var addr = ":5005"
 
 func main() {
 	listener, err := net.Listen("tcp", addr)
@@ -19,13 +19,16 @@ func main() {
 		return
 	}
 
-	// 初始化 etcd 连接配置文件
 	var config = clientv3.Config{}
-	config.Endpoints = []string{"localhost:2379"}
+	config.Endpoints = []string{"192.168.1.77:2379"}
+	etcdClient, err := clientv3.New(config)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	// 注册服务
-	var r = grpc4go.NewETCDResolverWithConfig(config)
-	fmt.Println(r.RegisterService("service", "hello", "node2", addr, 5))
+	var r = etcd.NewRegistry(etcdClient)
+	fmt.Println(r.Register("game", "user", "node1", addr, 5))
 
 	server := grpc.NewServer()
 	hw.RegisterFirstGRPCServer(server, &service{})
