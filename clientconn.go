@@ -41,6 +41,19 @@ func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply i
 	return err
 }
 
+// NewStream 目前还不能直接使用
+func (this *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	var conn, err = this.pool.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	var nConn = conn.(*grpc.ClientConn)
+	stream, err := nConn.NewStream(ctx, desc, method, opts...)
+	this.pool.Put(conn)
+	return stream, err
+}
+
 func (this *ClientConn) Close() {
 	this.pool.Close()
 }
