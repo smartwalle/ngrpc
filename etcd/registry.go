@@ -23,9 +23,9 @@ func NewRegistry(client *clientv3.Client) *Registry {
 }
 
 func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
-	var nResolver = &Registry{scheme: scheme, client: etcd4go.NewClient(client)}
-	resolver.Register(nResolver)
-	return nResolver
+	var nRegistry = &Registry{scheme: scheme, client: etcd4go.NewClient(client)}
+	resolver.Register(nRegistry)
+	return nRegistry
 }
 
 func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
