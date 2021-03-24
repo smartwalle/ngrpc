@@ -12,20 +12,16 @@ type ClientConn struct {
 	pool   pool4go.Pool
 }
 
-func NewClientConn(target string, maxIdle, maxOpen int, opts ...grpc.DialOption) *ClientConn {
-	if maxIdle <= 0 {
-		maxIdle = 1
+func NewClientConn(target string, poolSize int, opts ...grpc.DialOption) *ClientConn {
+	if poolSize <= 0 {
+		poolSize = 1
 	}
-	if maxOpen <= 0 {
-		maxOpen = 1
-	}
-
 	var c = &ClientConn{}
 	c.target = target
 	c.opts = opts
 	c.pool = pool4go.New(func() (pool4go.Conn, error) {
 		return grpc.Dial(target, opts...)
-	}, pool4go.WithMaxIdle(maxIdle), pool4go.WithMaxOpen(maxOpen))
+	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))
 	return c
 }
 
