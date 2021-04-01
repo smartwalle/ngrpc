@@ -22,7 +22,7 @@ func main() {
 	}
 	etcd.NewRegistry(etcdClient)
 
-	var conn = grpc4go.NewClientConn("etcd://game/user", 10, 10, grpc.WithInsecure())
+	var conn = grpc4go.NewClientConn("etcd://game/user", 10, grpc.WithInsecure())
 	var now = time.Now()
 
 	var wg = &sync.WaitGroup{}
