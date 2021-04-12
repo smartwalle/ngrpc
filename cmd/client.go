@@ -22,7 +22,15 @@ func main() {
 	}
 	etcd.NewRegistry(etcdClient)
 
-	var conn = grpc4go.NewClientConn("etcd://game/user", 10, grpc.WithInsecure())
+	var conn = grpc4go.Dial("etcd://game/user", 10, grpc.WithInsecure())
+
+	// timeout
+	//var conn = grpc4go.Dialx(10, func() (*grpc.ClientConn, error) {
+	//	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*3)
+	//	defer cancel()
+	//	return grpc.DialContext(ctx, "etcd://game/user", grpc.WithInsecure(), grpc.WithBlock())
+	//})
+
 	var now = time.Now()
 
 	var wg = &sync.WaitGroup{}
