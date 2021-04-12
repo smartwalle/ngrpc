@@ -13,39 +13,30 @@ var (
 )
 
 type ClientConn struct {
-	target  string
-	pool    pool4go.Pool
-	retries int
+	pool       pool4go.Pool
+	retryCount int
+}
+
+func Dialx(poolSize int, dialFunc func() (*grpc.ClientConn, error)) *ClientConn {
+	if poolSize <= 0 {
+		poolSize = 1
+	}
+	var c = &ClientConn{}
+	c.pool = pool4go.New(func() (pool4go.Conn, error) {
+		return dialFunc()
+	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))
+	c.retryCount = poolSize
+	return c
 }
 
 func Dial(target string, poolSize int, opts ...grpc.DialOption) *ClientConn {
-	if poolSize <= 0 {
-		poolSize = 1
-	}
-	var c = &ClientConn{}
-	c.target = target
-	c.pool = pool4go.New(func() (pool4go.Conn, error) {
+	return Dialx(poolSize, func() (*grpc.ClientConn, error) {
 		return grpc.Dial(target, opts...)
-	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))
-	c.retries = poolSize
-	return c
-}
-
-func DialContext(ctx context.Context, target string, poolSize int, opts ...grpc.DialOption) *ClientConn {
-	if poolSize <= 0 {
-		poolSize = 1
-	}
-	var c = &ClientConn{}
-	c.target = target
-	c.pool = pool4go.New(func() (pool4go.Conn, error) {
-		return grpc.DialContext(ctx, target, opts...)
-	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))
-	c.retries = poolSize
-	return c
+	})
 }
 
 func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...grpc.CallOption) error {
-	for i := 0; i <= this.retries; i++ {
+	for i := 0; i <= this.retryCount; i++ {
 		var conn, err = this.pool.Get()
 		if err != nil {
 			return err
@@ -67,7 +58,7 @@ func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply i
 }
 
 func (this *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	for i := 0; i <= this.retries; i++ {
+	for i := 0; i <= this.retryCount; i++ {
 		var conn, err = this.pool.Get()
 		if err != nil {
 			return nil, err
