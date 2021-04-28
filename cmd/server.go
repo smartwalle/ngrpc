@@ -27,7 +27,7 @@ func main() {
 		return
 	}
 	var r = etcd.NewRegistry(etcdClient)
-	r.Register("game", "user", "node1", addr, 5)
+	r.Register(context.Background(), "game", "user", "node1", addr, 5)
 
 	server := grpc.NewServer()
 	hw.RegisterFirstGRPCServer(server, &service{})

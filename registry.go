@@ -1,11 +1,13 @@
 package grpc4go
 
+import "context"
+
 type Registry interface {
 	Scheme() string
 
-	Register(domain, service, node, addr string, ttl int64) (key string, err error)
+	Register(ctx context.Context, domain, service, node, addr string, ttl int64) (key string, err error)
 
-	Deregister(domain, service, node string) (err error)
+	Deregister(ctx context.Context, domain, service, node string) (err error)
 
 	BuildPath(domain, service, node string) string
 
