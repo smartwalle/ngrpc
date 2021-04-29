@@ -6,6 +6,7 @@ import (
 	"go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
 	"path/filepath"
+	"sync"
 )
 
 const (
@@ -13,10 +14,10 @@ const (
 )
 
 type Registry struct {
-	scheme     string
-	client     *etcd4go.Client
-	watcher    *etcd4go.Watcher
-	clientConn resolver.ClientConn
+	scheme   string
+	client   *etcd4go.Client
+	mu       *sync.Mutex
+	watchers map[string]*etcd4go.Watcher
 }
 
 func NewRegistry(client *clientv3.Client) *Registry {
@@ -25,25 +26,31 @@ func NewRegistry(client *clientv3.Client) *Registry {
 
 func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
 	var nRegistry = &Registry{scheme: scheme, client: etcd4go.NewClient(client)}
+	nRegistry.mu = &sync.Mutex{}
+	nRegistry.watchers = make(map[string]*etcd4go.Watcher)
 	resolver.Register(nRegistry)
 	return nRegistry
 }
 
 func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
-	this.clientConn = cc
 	var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
-	this.watcher = this.client.Watch(context.Background(), key, this.watch, clientv3.WithPrefix())
+	var watcher = this.client.Watch(context.Background(), key, this.watch(cc), clientv3.WithPrefix())
+	this.mu.Lock()
+	this.watchers[key] = watcher
+	this.mu.Unlock()
 	return this, nil
 }
 
-func (this *Registry) watch(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
-	var paths = watcher.Values()
-	var addrList = make([]resolver.Address, 0, len(paths))
-	for _, nValue := range paths {
-		var addr = resolver.Address{Addr: string(nValue)}
-		addrList = append(addrList, addr)
+func (this *Registry) watch(cc resolver.ClientConn) func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
+	return func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
+		var paths = watcher.Values()
+		var addrList = make([]resolver.Address, 0, len(paths))
+		for _, nValue := range paths {
+			var addr = resolver.Address{Addr: string(nValue)}
+			addrList = append(addrList, addr)
+		}
+		cc.UpdateState(resolver.State{Addresses: addrList})
 	}
-	this.clientConn.UpdateState(resolver.State{Addresses: addrList})
 }
 
 func (this *Registry) Scheme() string {
@@ -54,9 +61,13 @@ func (this *Registry) ResolveNow(option resolver.ResolveNowOptions) {
 }
 
 func (this *Registry) Close() {
-	if this.watcher != nil {
-		this.watcher.Close()
+	this.mu.Lock()
+	for _, watcher := range this.watchers {
+		if watcher != nil {
+			watcher.Close()
+		}
 	}
+	this.mu.Unlock()
 }
 
 func (this *Registry) Register(ctx context.Context, domain, service, node, addr string, ttl int64) (key string, err error) {
