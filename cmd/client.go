@@ -22,17 +22,11 @@ func main() {
 	}
 	etcd.NewRegistry(etcdClient)
 
-	var conn = grpc4go.Dial("etcd://game/user", 10, grpc.WithInsecure())
+	var conn = grpc4go.Dial("etcd://game/user", 10, time.Second*3, grpc.WithInsecure(), grpc.WithBlock())
 
-	// timeout
-	//var conn = grpc4go.Dialx(10, func() (*grpc.ClientConn, error) {
-	//	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*3)
-	//	defer cancel()
-	//	return grpc.DialContext(ctx, "etcd://game/user", grpc.WithInsecure(), grpc.WithBlock())
-	//})
+	fmt.Println("ready...")
 
 	var now = time.Now()
-
 	var wg = &sync.WaitGroup{}
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -40,7 +34,7 @@ func main() {
 			for x := 0; x < 10000; x++ {
 				cc := NewFirstGRPCClient(conn)
 				if _, err = cc.FirstCall(context.Background(), &hw.FirstRequest{Name: "Yang"}); err != nil {
-					fmt.Println(err)
+					fmt.Println("call error:", err)
 					continue
 				}
 			}

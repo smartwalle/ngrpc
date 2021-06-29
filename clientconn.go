@@ -6,6 +6,7 @@ import (
 	"github.com/smartwalle/pool4go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"time"
 )
 
 var (
@@ -17,22 +18,22 @@ type ClientConn struct {
 	retryCount int
 }
 
-func Dialx(poolSize int, dialFunc func() (*grpc.ClientConn, error)) *ClientConn {
+func Dial(target string, poolSize int, timeout time.Duration, opts ...grpc.DialOption) *ClientConn {
 	if poolSize <= 0 {
 		poolSize = 1
 	}
 	var c = &ClientConn{}
 	c.pool = pool4go.New(func() (pool4go.Conn, error) {
-		return dialFunc()
+		var ctx = context.Background()
+		if timeout > 0 {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithTimeout(ctx, timeout)
+			defer cancel()
+		}
+		return grpc.DialContext(ctx, target, opts...)
 	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))
 	c.retryCount = poolSize
 	return c
-}
-
-func Dial(target string, poolSize int, opts ...grpc.DialOption) *ClientConn {
-	return Dialx(poolSize, func() (*grpc.ClientConn, error) {
-		return grpc.Dial(target, opts...)
-	})
 }
 
 func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...grpc.CallOption) error {
