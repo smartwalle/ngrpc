@@ -32,7 +32,7 @@ func main() {
 		wg.Add(1)
 		go func() {
 			for x := 0; x < 10000; x++ {
-				cc := NewFirstGRPCClient(conn)
+				cc := hw.NewFirstGRPCClient(conn)
 				if _, err = cc.FirstCall(context.Background(), &hw.FirstRequest{Name: "Yang"}); err != nil {
 					fmt.Println("call error:", err)
 					continue
@@ -44,21 +44,4 @@ func main() {
 	wg.Wait()
 	fmt.Println("耗时：", time.Now().Sub(now))
 	select {}
-}
-
-type firstGRPCClient struct {
-	cc *grpc4go.ClientConn
-}
-
-func NewFirstGRPCClient(cc *grpc4go.ClientConn) hw.FirstGRPCClient {
-	return &firstGRPCClient{cc}
-}
-
-func (c *firstGRPCClient) FirstCall(ctx context.Context, in *hw.FirstRequest, opts ...grpc.CallOption) (*hw.FirstResponse, error) {
-	out := new(hw.FirstResponse)
-	err := c.cc.Invoke(ctx, "/hw.FirstGRPC/FirstCall", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }

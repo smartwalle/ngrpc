@@ -35,6 +35,7 @@ func main() {
 }
 
 type service struct {
+	hw.UnimplementedFirstGRPCServer
 }
 
 func (this *service) FirstCall(ctx context.Context, req *hw.FirstRequest) (*hw.FirstResponse, error) {
