@@ -29,6 +29,8 @@ func Dial(target string, poolSize int, timeout time.Duration, opts ...grpc.DialO
 			var cancel context.CancelFunc
 			ctx, cancel = context.WithTimeout(ctx, timeout)
 			defer cancel()
+
+			opts = append(opts, grpc.WithBlock())
 		}
 		return grpc.DialContext(ctx, target, opts...)
 	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))

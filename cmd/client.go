@@ -22,7 +22,7 @@ func main() {
 	}
 	etcd.NewRegistry(etcdClient)
 
-	var conn = grpc4go.Dial("etcd://game/user", 10, time.Second*3, grpc.WithInsecure(), grpc.WithBlock())
+	var conn = grpc4go.Dial("etcd://game/user", 10, time.Second*3, grpc.WithInsecure())
 
 	fmt.Println("ready...")
 
