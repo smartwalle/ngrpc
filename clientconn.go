@@ -15,7 +15,7 @@ var (
 
 type ClientConn struct {
 	pool       pool4go.Pool
-	retryCount int
+	maxRetries int
 }
 
 func Dial(target string, poolSize int, timeout time.Duration, opts ...grpc.DialOption) *ClientConn {
@@ -34,12 +34,12 @@ func Dial(target string, poolSize int, timeout time.Duration, opts ...grpc.DialO
 		}
 		return grpc.DialContext(ctx, target, opts...)
 	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))
-	c.retryCount = poolSize
+	c.maxRetries = poolSize
 	return c
 }
 
 func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...grpc.CallOption) error {
-	for i := 0; i <= this.retryCount; i++ {
+	for i := 0; i <= this.maxRetries; i++ {
 		var conn, err = this.pool.Get()
 		if err != nil {
 			return err
@@ -61,7 +61,7 @@ func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply i
 }
 
 func (this *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	for i := 0; i <= this.retryCount; i++ {
+	for i := 0; i <= this.maxRetries; i++ {
 		var conn, err = this.pool.Get()
 		if err != nil {
 			return nil, err
