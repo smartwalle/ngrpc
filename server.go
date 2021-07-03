@@ -34,6 +34,10 @@ func (this *Server) Node() string {
 	return this.node
 }
 
+func (this *Server) Addr() string {
+	return this.addr
+}
+
 func (this *Server) Server() *grpc.Server {
 	return this.server
 }
