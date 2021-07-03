@@ -30,6 +30,10 @@ func (this *Server) Name() string {
 	return this.registry.BuildPath(this.domain, this.service, this.node)
 }
 
+func (this *Server) Domain() string {
+	return this.domain
+}
+
 func (this *Server) Service() string {
 	return this.service
 }
