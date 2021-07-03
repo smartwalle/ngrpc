@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/smartwalle/grpc4go/demo"
 	"github.com/smartwalle/grpc4go/demo/proto"
 	"github.com/smartwalle/grpc4go/etcd"
@@ -38,7 +37,7 @@ func main() {
 	log4go.Println("服务地址:", listener.Addr().String())
 
 	server := grpc.NewServer()
-	proto.RegisterHelloWorldServer(server, &HelloService{})
+	proto.RegisterHelloWorldServer(server, &demo.HelloService{})
 	go func() {
 		err = server.Serve(listener)
 		if err != nil {
@@ -59,14 +58,4 @@ MainLoop:
 	// 取消注册服务
 	r.Deregister(context.Background(), "grpc", "hello", "normal")
 	r.Close()
-}
-
-type HelloService struct {
-	proto.UnimplementedHelloWorldServer
-}
-
-func (this *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.World, error) {
-	var rsp = &proto.World{}
-	rsp.Message = fmt.Sprintf("收到来自 %s 的消息", in.Name)
-	return rsp, nil
 }
