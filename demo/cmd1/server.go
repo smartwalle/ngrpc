@@ -32,7 +32,7 @@ func main() {
 	}
 
 	var r = etcd.NewRegistry(etcdClient)
-	r.Register(context.Background(), "grpc", "hello", "normal", listener.Addr().String(), 10)
+	r.Register(context.Background(), "grpc1", "hello", "cmd1", listener.Addr().String(), 10)
 
 	log4go.Println("服务地址:", listener.Addr().String())
 
