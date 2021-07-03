@@ -15,7 +15,7 @@ func main() {
 	proto.RegisterHelloWorldServer(server.Server(), &demo.HelloService{})
 
 	go func() {
-		log4go.Println("服务地址:", server.Addr())
+		log4go.Println("服务地址:", server.Addr(), server.Name())
 		var err = server.Run()
 		if err != nil {
 			log4go.Println("启动服务发生错误:", err)
@@ -24,7 +24,7 @@ func main() {
 
 	demo.Wait()
 
-	// 取消注册服务
+	// 关闭服务
 	server.Stop()
 	r.Close()
 }

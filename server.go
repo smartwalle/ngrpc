@@ -26,6 +26,10 @@ func NewServer(domain, service, node, addr string, registry Registry, opts ...gr
 	return s
 }
 
+func (this *Server) Name() string {
+	return this.registry.BuildPath(this.domain, this.service, this.node)
+}
+
 func (this *Server) Service() string {
 	return this.service
 }
@@ -36,6 +40,10 @@ func (this *Server) Node() string {
 
 func (this *Server) Addr() string {
 	return this.addr
+}
+
+func (this *Server) Registry() Registry {
+	return this.registry
 }
 
 func (this *Server) Server() *grpc.Server {

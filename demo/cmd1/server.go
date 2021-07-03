@@ -34,7 +34,9 @@ func main() {
 
 	demo.Wait()
 
+	// 关闭服务
+	server.Stop()
 	// 取消注册服务
-	r.Deregister(context.Background(), "grpc", "hello", "normal")
+	r.Deregister(context.Background(), "grpc1", "hello", "cmd1")
 	r.Close()
 }
