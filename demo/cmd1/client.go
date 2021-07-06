@@ -18,11 +18,16 @@ func main() {
 
 	var client = proto.NewHelloWorldClient(conn)
 
-	rsp, err := client.Call(context.Background(), &proto.Hello{Name: "Coffee"})
-	if err != nil {
-		log4go.Println(err)
-		return
+	for i := 0; i < 100; i++ {
+		rsp, err := client.Call(context.Background(), &proto.Hello{Name: "Coffee"})
+		if err != nil {
+			log4go.Println(err)
+			return
+		}
+		log4go.Println(i, rsp.Message)
+
+		time.Sleep(time.Second * 1)
 	}
-	log4go.Println(rsp.Message)
+
 	r.Close()
 }
