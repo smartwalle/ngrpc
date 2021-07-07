@@ -13,9 +13,9 @@ import (
 // WithUnaryCallRetry 普通方法调用重试处理
 func WithUnaryCallRetry(opts ...CallOption) grpc.DialOption {
 	var defaultOption = &option{
-		max:     1,
-		timeout: 5 * time.Second,
-		codes:   []codes.Code{codes.ResourceExhausted, codes.Unavailable},
+		max:         1,
+		callTimeout: 5 * time.Second,
+		codes:       []codes.Code{codes.ResourceExhausted, codes.Unavailable},
 		backoff: func(ctx context.Context, i int) time.Duration {
 			return time.Second * 1
 		},
@@ -48,7 +48,7 @@ func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 			if isContextError(err) {
 				if pCtx.Err() != nil {
 					return err
-				} else if callOption.timeout != 0 {
+				} else if callOption.callTimeout != 0 {
 					continue
 				}
 			}
@@ -80,8 +80,8 @@ func retryBackoff(i int, ctx context.Context, callOption *option) error {
 
 func callContext(pCtx context.Context, callOption *option) context.Context {
 	var nCtx = pCtx
-	if callOption.timeout != 0 {
-		nCtx, _ = context.WithTimeout(nCtx, callOption.timeout)
+	if callOption.callTimeout != 0 {
+		nCtx, _ = context.WithTimeout(nCtx, callOption.callTimeout)
 	}
 	return nCtx
 }

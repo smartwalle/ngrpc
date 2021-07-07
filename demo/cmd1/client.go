@@ -14,7 +14,7 @@ import (
 func main() {
 	var r = etcd.NewRegistry(demo.GetETCDClient())
 
-	var conn = grpc4go.Dial(r.BuildPath("grpc1", "hello", "cmd1"), 10, time.Second*3, grpc.WithInsecure())
+	var conn = grpc4go.Dial(r.BuildPath("grpc1", "hello", "cmd1"), grpc.WithInsecure(), grpc4go.WithTimeout(time.Second*3))
 
 	var client = proto.NewHelloWorldClient(conn)
 

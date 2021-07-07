@@ -15,10 +15,10 @@ type CallOption struct {
 }
 
 type option struct {
-	max     int
-	timeout time.Duration
-	codes   []codes.Code
-	backoff Backoff
+	max         int
+	callTimeout time.Duration
+	codes       []codes.Code
+	backoff     Backoff
 }
 
 func Disable() CallOption {
@@ -31,9 +31,9 @@ func WithMax(max int) CallOption {
 	}}
 }
 
-func WithPerTimeout(timeout time.Duration) CallOption {
+func WithTimeout(timeout time.Duration) CallOption {
 	return CallOption{apply: func(opt *option) {
-		opt.timeout = timeout
+		opt.callTimeout = timeout
 	}}
 }
 

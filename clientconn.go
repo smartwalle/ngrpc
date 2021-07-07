@@ -13,28 +13,78 @@ var (
 	ErrServerNotFound = errors.New("server not found")
 )
 
+type DialOption struct {
+	grpc.EmptyDialOption
+	apply func(*option)
+}
+
+type option struct {
+	poolSize    int
+	dialTimeout time.Duration
+}
+
+func WithPoolSize(size int) DialOption {
+	return DialOption{apply: func(opt *option) {
+		opt.poolSize = size
+	}}
+}
+
+func WithTimeout(timeout time.Duration) DialOption {
+	return DialOption{apply: func(opt *option) {
+		opt.dialTimeout = timeout
+	}}
+}
+
+func filterOptions(inOpts []grpc.DialOption) (grpcOptions []grpc.DialOption, dialOptions []DialOption) {
+	for _, inOpt := range inOpts {
+		if opt, ok := inOpt.(DialOption); ok {
+			dialOptions = append(dialOptions, opt)
+		} else {
+			grpcOptions = append(grpcOptions, inOpt)
+		}
+	}
+	return grpcOptions, dialOptions
+}
+
+func mergeOptions(opt *option, dialOptions []DialOption) *option {
+	if len(dialOptions) == 0 {
+		return opt
+	}
+	var nOpt = &option{}
+	*nOpt = *opt
+	for _, f := range dialOptions {
+		f.apply(nOpt)
+	}
+	return nOpt
+}
+
 type ClientConn struct {
 	pool       pool4go.Pool
 	maxRetries int
 }
 
-func Dial(target string, poolSize int, dialTimeout time.Duration, opts ...grpc.DialOption) *ClientConn {
-	if poolSize <= 0 {
-		poolSize = 1
+func Dial(target string, opts ...grpc.DialOption) *ClientConn {
+	var defaultOption = &option{
+		poolSize:    1,
+		dialTimeout: 0,
 	}
+
+	var grpcOpts, dialOpts = filterOptions(opts)
+	var dialOption = mergeOptions(defaultOption, dialOpts)
+
 	var c = &ClientConn{}
 	c.pool = pool4go.New(func() (pool4go.Conn, error) {
 		var ctx = context.Background()
-		if dialTimeout > 0 {
+		if dialOption.dialTimeout > 0 {
 			var cancel context.CancelFunc
-			ctx, cancel = context.WithTimeout(ctx, dialTimeout)
+			ctx, cancel = context.WithTimeout(ctx, dialOption.dialTimeout)
 			defer cancel()
 
-			opts = append(opts, grpc.WithBlock())
+			grpcOpts = append(grpcOpts, grpc.WithBlock())
 		}
-		return grpc.DialContext(ctx, target, opts...)
-	}, pool4go.WithMaxIdle(poolSize), pool4go.WithMaxOpen(poolSize))
-	c.maxRetries = poolSize
+		return grpc.DialContext(ctx, target, grpcOpts...)
+	}, pool4go.WithMaxIdle(dialOption.poolSize), pool4go.WithMaxOpen(dialOption.poolSize))
+	c.maxRetries = dialOption.poolSize
 	return c
 }
 
