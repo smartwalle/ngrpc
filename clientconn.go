@@ -18,16 +18,16 @@ type ClientConn struct {
 	maxRetries int
 }
 
-func Dial(target string, poolSize int, timeout time.Duration, opts ...grpc.DialOption) *ClientConn {
+func Dial(target string, poolSize int, dialTimeout time.Duration, opts ...grpc.DialOption) *ClientConn {
 	if poolSize <= 0 {
 		poolSize = 1
 	}
 	var c = &ClientConn{}
 	c.pool = pool4go.New(func() (pool4go.Conn, error) {
 		var ctx = context.Background()
-		if timeout > 0 {
+		if dialTimeout > 0 {
 			var cancel context.CancelFunc
-			ctx, cancel = context.WithTimeout(ctx, timeout)
+			ctx, cancel = context.WithTimeout(ctx, dialTimeout)
 			defer cancel()
 
 			opts = append(opts, grpc.WithBlock())
