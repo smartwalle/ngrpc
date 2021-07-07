@@ -27,13 +27,13 @@ func WithUnaryCallRetry(opts ...CallOption) grpc.DialOption {
 func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(pCtx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, retryOpts = filterOptions(opts)
-		var callOpt = mergeOptions(defaultOption, retryOpts)
+		var callOption = mergeOptions(defaultOption, retryOpts)
 
 		var err error
 
-		for i := 0; i <= callOpt.max; i++ {
+		for i := 0; i <= callOption.max; i++ {
 			if i > 0 {
-				if err = retryBackoff(i, pCtx, callOpt); err != nil {
+				if err = retryBackoff(i, pCtx, callOption); err != nil {
 					return err
 				}
 			}
@@ -48,12 +48,12 @@ func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 			if isContextError(err) {
 				if pCtx.Err() != nil {
 					return err
-				} else if callOpt.timeout != 0 {
+				} else if callOption.timeout != 0 {
 					continue
 				}
 			}
 
-			if isRetriable(err, callOpt) == false {
+			if isRetriable(err, callOption) == false {
 				return err
 			}
 		}
@@ -61,10 +61,10 @@ func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 	}
 }
 
-func retryBackoff(i int, ctx context.Context, callOpt *option) error {
+func retryBackoff(i int, ctx context.Context, callOption *option) error {
 	var waitTime time.Duration = 0
-	if i > 0 {
-		waitTime = callOpt.backoff(ctx, i)
+	if i > 0 && callOption.backoff != nil {
+		waitTime = callOption.backoff(ctx, i)
 	}
 	if waitTime > 0 {
 		var timer = time.NewTimer(waitTime)
@@ -78,10 +78,10 @@ func retryBackoff(i int, ctx context.Context, callOpt *option) error {
 	return nil
 }
 
-func callContext(pCtx context.Context, callOpt *option) context.Context {
+func callContext(pCtx context.Context, callOption *option) context.Context {
 	var nCtx = pCtx
-	if callOpt.timeout != 0 {
-		nCtx, _ = context.WithTimeout(nCtx, callOpt.timeout)
+	if callOption.timeout != 0 {
+		nCtx, _ = context.WithTimeout(nCtx, callOption.timeout)
 	}
 	return nCtx
 }
@@ -91,12 +91,12 @@ func isContextError(err error) bool {
 	return code == codes.DeadlineExceeded || code == codes.Canceled
 }
 
-func isRetriable(err error, callOpts *option) bool {
+func isRetriable(err error, callOption *option) bool {
 	var errCode = status.Code(err)
 	if isContextError(err) {
 		return false
 	}
-	for _, code := range callOpts.codes {
+	for _, code := range callOption.codes {
 		if code == errCode {
 			return true
 		}
