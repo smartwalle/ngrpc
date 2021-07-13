@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/smartwalle/grpc4go"
 	"github.com/smartwalle/grpc4go/demo"
 	"github.com/smartwalle/grpc4go/demo/proto"
@@ -12,7 +11,10 @@ import (
 func main() {
 	var r = etcd.NewRegistry(demo.GetETCDClient())
 	var s, err = grpc4go.NewServer("grpc2", "hello", "cmd2", ":0", r)
-	fmt.Println(err)
+	if err != nil {
+		log4go.Println("创建服务发生错误:", err)
+		return
+	}
 
 	proto.RegisterHelloWorldServer(s.Server(), &demo.HelloService{})
 
