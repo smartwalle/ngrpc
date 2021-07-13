@@ -25,14 +25,7 @@ func NewServer(domain, service, node string, registry Registry, opts ...grpc.Ser
 	var grpcOpts, serverOpts = filterServerOptions(opts)
 	var serverOpt = mergeServerOptions(defaultOption, serverOpts)
 
-	nAddr, err := net.ResolveTCPAddr("tcp", serverOpt.addr)
-	if err != nil {
-		return nil, err
-	}
-	if len(nAddr.IP) == 0 {
-		nAddr.IP = getInternalIP()
-	}
-	listener, err := net.ListenTCP("tcp", nAddr)
+	var listener, err = listen(serverOpt.addr)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +56,21 @@ func getInternalIP() net.IP {
 		}
 	}
 	return nil
+}
+
+func listen(addr string) (net.Listener, error) {
+	nAddr, err := net.ResolveTCPAddr("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+	if len(nAddr.IP) == 0 {
+		nAddr.IP = getInternalIP()
+	}
+	listener, err := net.ListenTCP("tcp", nAddr)
+	if err != nil {
+		return nil, err
+	}
+	return listener, nil
 }
 
 func (this *Server) Name() string {
