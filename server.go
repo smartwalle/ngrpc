@@ -7,6 +7,7 @@ import (
 )
 
 type Server struct {
+	opt      *serverOption
 	domain   string
 	service  string
 	node     string
@@ -16,28 +17,35 @@ type Server struct {
 	server   *grpc.Server
 }
 
-func NewServer(domain, service, node, addr string, registry Registry, opts ...grpc.ServerOption) (*Server, error) {
-	nAddr, err := net.ResolveTCPAddr("tcp", addr)
+func NewServer(domain, service, node string, registry Registry, opts ...grpc.ServerOption) (*Server, error) {
+	var defaultOption = &serverOption{
+		registerTTL: 15,
+	}
+
+	var grpcOpts, serverOpts = filterServerOptions(opts)
+	var serverOpt = mergeServerOptions(defaultOption, serverOpts)
+
+	nAddr, err := net.ResolveTCPAddr("tcp", serverOpt.addr)
 	if err != nil {
 		return nil, err
 	}
 	if len(nAddr.IP) == 0 {
 		nAddr.IP = getInternalIP()
 	}
-
 	listener, err := net.ListenTCP("tcp", nAddr)
 	if err != nil {
 		return nil, err
 	}
 
 	var s = &Server{}
+	s.opt = serverOpt
 	s.domain = domain
 	s.service = service
 	s.node = node
 	s.addr = listener.Addr()
 	s.listener = listener
 	s.registry = registry
-	s.server = grpc.NewServer(opts...)
+	s.server = grpc.NewServer(grpcOpts...)
 	return s, nil
 }
 
@@ -87,7 +95,7 @@ func (this *Server) Server() *grpc.Server {
 
 func (this *Server) Run() error {
 	if this.registry != nil {
-		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), 15)
+		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), this.opt.registerTTL)
 	}
 	if err := this.server.Serve(this.listener); err != nil {
 		this.Stop()

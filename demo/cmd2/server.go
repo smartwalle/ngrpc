@@ -10,7 +10,7 @@ import (
 
 func main() {
 	var r = etcd.NewRegistry(demo.GetETCDClient())
-	var s, err = grpc4go.NewServer("grpc2", "hello", "cmd2", ":0", r)
+	var s, err = grpc4go.NewServer("grpc2", "hello", "cmd2", r, grpc4go.WithRegisterTTL(5))
 	if err != nil {
 		log4go.Println("创建服务发生错误:", err)
 		return
