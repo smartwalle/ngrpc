@@ -4,6 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"net"
+	"path/filepath"
 )
 
 type Server struct {
@@ -74,7 +75,10 @@ func listen(addr string) (net.Listener, error) {
 }
 
 func (this *Server) Name() string {
-	return this.registry.BuildPath(this.domain, this.service, this.node)
+	if this.registry != nil {
+		return this.registry.BuildPath(this.domain, this.service, this.node)
+	}
+	return filepath.Join(this.domain, this.service, this.node)
 }
 
 func (this *Server) Domain() string {
