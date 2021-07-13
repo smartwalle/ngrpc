@@ -22,11 +22,11 @@ func main() {
 	var r = etcd.NewRegistry(demo.GetETCDClient())
 	r.Register(context.Background(), "grpc1", "hello", "cmd1", listener.Addr().String(), 10)
 
-	var server = grpc.NewServer()
-	proto.RegisterHelloWorldServer(server, &demo.HelloService{})
+	var s = grpc.NewServer()
+	proto.RegisterHelloWorldServer(s, &demo.HelloService{})
 	go func() {
 		log4go.Println("服务地址:", listener.Addr().String())
-		err = server.Serve(listener)
+		err = s.Serve(listener)
 		if err != nil {
 			log4go.Println("启动服务发生错误:", err)
 		}
@@ -35,7 +35,7 @@ func main() {
 	demo.Wait()
 
 	// 关闭服务
-	server.Stop()
+	s.Stop()
 	// 取消注册服务
 	r.Deregister(context.Background(), "grpc1", "hello", "cmd1")
 	r.Close()

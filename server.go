@@ -10,20 +10,51 @@ type Server struct {
 	domain   string
 	service  string
 	node     string
-	addr     string
+	addr     net.Addr
+	listener net.Listener
 	registry Registry
 	server   *grpc.Server
 }
 
-func NewServer(domain, service, node, addr string, registry Registry, opts ...grpc.ServerOption) *Server {
+func NewServer(domain, service, node, addr string, registry Registry, opts ...grpc.ServerOption) (*Server, error) {
+	nAddr, err := net.ResolveTCPAddr("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+	if len(nAddr.IP) == 0 {
+		nAddr.IP = getInternalIP()
+	}
+
+	listener, err := net.ListenTCP("tcp", nAddr)
+	if err != nil {
+		return nil, err
+	}
+
 	var s = &Server{}
 	s.domain = domain
 	s.service = service
 	s.node = node
-	s.addr = addr
+	s.addr = listener.Addr()
+	s.listener = listener
 	s.registry = registry
 	s.server = grpc.NewServer(opts...)
-	return s
+	return s, nil
+}
+
+func getInternalIP() net.IP {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return nil
+	}
+
+	for _, addr := range addrs {
+		if ipNet, ok := addr.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+			if ipNet.IP.To4() != nil {
+				return ipNet.IP
+			}
+		}
+	}
+	return nil
 }
 
 func (this *Server) Name() string {
@@ -43,7 +74,7 @@ func (this *Server) Node() string {
 }
 
 func (this *Server) Addr() string {
-	return this.addr
+	return this.addr.String()
 }
 
 func (this *Server) Registry() Registry {
@@ -55,16 +86,10 @@ func (this *Server) Server() *grpc.Server {
 }
 
 func (this *Server) Run() error {
-	listen, err := net.Listen("tcp", this.addr)
-	if err != nil {
-		return err
-	}
-	this.addr = listen.Addr().String()
-
 	if this.registry != nil {
-		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.addr, 15)
+		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), 15)
 	}
-	if err = this.server.Serve(listen); err != nil {
+	if err := this.server.Serve(this.listener); err != nil {
 		this.Stop()
 		return err
 	}
