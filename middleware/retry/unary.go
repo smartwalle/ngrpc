@@ -80,7 +80,7 @@ func retryBackoff(i int, ctx context.Context, callOption *option) error {
 
 func callContext(pCtx context.Context, callOption *option) context.Context {
 	var nCtx = pCtx
-	if callOption.callTimeout != 0 {
+	if callOption.callTimeout > 0 {
 		nCtx, _ = context.WithTimeout(nCtx, callOption.callTimeout)
 	}
 	return nCtx
