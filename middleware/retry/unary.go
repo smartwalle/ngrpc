@@ -38,7 +38,7 @@ func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 				}
 			}
 
-			var nCtx = callContext(pCtx, defaultOption)
+			var nCtx = callContext(pCtx, callOption)
 			err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
 
 			if err == nil {
