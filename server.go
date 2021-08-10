@@ -12,7 +12,6 @@ type Server struct {
 	domain   string
 	service  string
 	node     string
-	addr     net.Addr
 	listener net.Listener
 	registry Registry
 	server   *grpc.Server
@@ -36,7 +35,6 @@ func NewServer(domain, service, node string, registry Registry, opts ...grpc.Ser
 	s.domain = domain
 	s.service = service
 	s.node = node
-	s.addr = listener.Addr()
 	s.listener = listener
 	s.registry = registry
 	s.server = grpc.NewServer(grpcOpts...)
@@ -94,7 +92,7 @@ func (this *Server) Node() string {
 }
 
 func (this *Server) Addr() string {
-	return this.addr.String()
+	return this.listener.Addr().String()
 }
 
 func (this *Server) Registry() Registry {
@@ -128,4 +126,8 @@ func (this *Server) GracefulStop() {
 		this.registry.Deregister(context.Background(), this.domain, this.service, this.node)
 	}
 	this.server.GracefulStop()
+}
+
+func (this *Server) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
+	this.server.RegisterService(desc, impl)
 }

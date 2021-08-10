@@ -16,7 +16,7 @@ func main() {
 		return
 	}
 
-	proto.RegisterHelloWorldServer(s.Server(), &demo.HelloService{})
+	proto.RegisterHelloWorldServer(s, &demo.HelloService{})
 
 	go func() {
 		log4go.Println("服务地址:", s.Addr(), s.Name())
