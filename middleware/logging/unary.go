@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-func WithUnaryCall(opts ...CallOption) grpc.DialOption {
+// WithUnaryClient 普通方法调用日志处理
+func WithUnaryClient(opts ...CallOption) grpc.DialOption {
 	var defaultOption = &option{
 		logger: &nilLogger{},
 	}

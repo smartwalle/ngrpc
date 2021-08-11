@@ -9,7 +9,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func WithUnaryCall(opts ...Option) grpc.ServerOption {
+// WithUnaryServer 服务端捕获普通方法调用异常
+func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainUnaryInterceptor(unaryRecovery(defaultOption))

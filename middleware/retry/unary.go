@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-// WithUnaryCall 普通方法调用重试处理
-func WithUnaryCall(opts ...CallOption) grpc.DialOption {
+// WithUnaryClient 普通方法调用重试处理
+func WithUnaryClient(opts ...CallOption) grpc.DialOption {
 	var defaultOption = &option{
 		max:         1,
 		callTimeout: 5 * time.Second,

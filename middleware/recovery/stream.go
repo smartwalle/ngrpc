@@ -2,7 +2,8 @@ package recovery
 
 import "google.golang.org/grpc"
 
-func WithStream(opts ...Option) grpc.ServerOption {
+// WithStreamServer 服务端捕获流调用异常
+func WithStreamServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainStreamInterceptor(streamRecovery(defaultOption))
