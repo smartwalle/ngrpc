@@ -9,7 +9,8 @@ import (
 // WithUnaryServer 服务端普通方法调用日志处理
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
-		logger: &nilLogger{},
+		logger:  &nilLogger{},
+		payload: true,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainUnaryInterceptor(unaryServerLog(defaultOption))

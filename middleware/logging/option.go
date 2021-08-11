@@ -17,7 +17,8 @@ type Option struct {
 }
 
 type option struct {
-	logger Logger
+	logger  Logger
+	payload bool
 }
 
 func Disable() Option {
@@ -31,6 +32,14 @@ func WithLogger(logger Logger) Option {
 	return Option{
 		apply: func(opt *option) {
 			opt.logger = logger
+		},
+	}
+}
+
+func WithPayload(payload bool) Option {
+	return Option{
+		apply: func(opt *option) {
+			opt.payload = payload
 		},
 	}
 }
