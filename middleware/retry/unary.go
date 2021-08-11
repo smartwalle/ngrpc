@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-// WithUnaryCallRetry 普通方法调用重试处理
-func WithUnaryCallRetry(opts ...CallOption) grpc.DialOption {
+// WithUnaryCall 普通方法调用重试处理
+func WithUnaryCall(opts ...CallOption) grpc.DialOption {
 	var defaultOption = &option{
 		max:         1,
 		callTimeout: 5 * time.Second,
@@ -21,7 +21,7 @@ func WithUnaryCallRetry(opts ...CallOption) grpc.DialOption {
 		},
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithUnaryInterceptor(unaryClientRetry(defaultOption))
+	return grpc.WithChainUnaryInterceptor(unaryClientRetry(defaultOption))
 }
 
 func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {

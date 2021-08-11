@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-func WithUnaryCallTimeout(opts ...CallOption) grpc.DialOption {
+func WithUnaryCall(opts ...CallOption) grpc.DialOption {
 	var defaultOption = &option{
 		timeout: 5 * time.Second,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithUnaryInterceptor(unaryClientTimeout(defaultOption))
+	return grpc.WithChainUnaryInterceptor(unaryClientTimeout(defaultOption))
 }
 
 func unaryClientTimeout(defaultOption *option) grpc.UnaryClientInterceptor {

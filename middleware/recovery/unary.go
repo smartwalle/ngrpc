@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func WithUnaryRecovery(opts ...Option) grpc.ServerOption {
+func WithUnaryCall(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainUnaryInterceptor(unaryRecovery(defaultOption))

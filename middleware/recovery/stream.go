@@ -2,7 +2,7 @@ package recovery
 
 import "google.golang.org/grpc"
 
-func WithStreamRecovery(opts ...Option) grpc.ServerOption {
+func WithStream(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainStreamInterceptor(streamRecovery(defaultOption))
