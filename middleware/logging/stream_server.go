@@ -62,7 +62,7 @@ func (this *serverStream) RecvMsg(m interface{}) error {
 	var err = this.ServerStream.RecvMsg(m)
 	if this.opt.payload {
 		if err != nil {
-			this.opt.logger.Printf("[%s] GRPC 流接收消息 [%v] 发生错误 [%v] \n", this.logId, m, err)
+			this.opt.logger.Printf("[%s] GRPC 流接收消息发生错误 [%v] \n", this.logId, err)
 		} else {
 			this.opt.logger.Printf("[%s] GRPC 流接收消息 [%v] 成功 \n", this.logId, m)
 		}
