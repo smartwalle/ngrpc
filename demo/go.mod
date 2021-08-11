@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/golang/protobuf v1.5.1 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/smartwalle/grpc4go v0.0.0
 	github.com/smartwalle/grpc4go/etcd v0.0.0
 	github.com/smartwalle/log4go v1.0.4
