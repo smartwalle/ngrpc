@@ -6,6 +6,7 @@ option go_package = "./proto";
 
 service HelloWorld {
   rpc Call(Hello) returns (World) {}
+  rpc Stream (stream Hello) returns (stream World) {}
 }
 
 message Hello {

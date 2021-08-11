@@ -16,3 +16,13 @@ func (this *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.Wor
 	//time.Sleep(time.Second * 100)
 	return rsp, nil
 }
+
+func (this *HelloService) Stream(s proto.HelloWorld_StreamServer) error {
+	for {
+		_, err := s.Recv()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
