@@ -17,7 +17,7 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 
 func unaryClientLog(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(pCtx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		defaultOption.logger.Printf("GRPC 请求访问 [%s - %s] 接口, 请求参数 [%v] \n", cc.Target(), method, req)
+		defaultOption.logger.Printf("GRPC 请求访问接口 [%s - %s], 请求参数 [%v] \n", cc.Target(), method, req)
 
 		var start = time.Now()
 		var err = invoker(pCtx, method, req, reply, cc, opts...)

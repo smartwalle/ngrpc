@@ -16,7 +16,7 @@ func WithStreamClient(opts ...Option) grpc.DialOption {
 
 func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		defaultOption.logger.Printf("GRPC 请求建立到 [%s - %s] 的流 \n", cc.Target(), method)
+		defaultOption.logger.Printf("GRPC 请求建立流 [%s - %s] \n", cc.Target(), method)
 
 		var nStream, err = streamer(ctx, desc, cc, method, opts...)
 		if err != nil {
