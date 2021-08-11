@@ -67,7 +67,7 @@ func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, ret
 	return grpcOptions, retryOptions
 }
 
-func getLogUUID(ctx context.Context) (string, context.Context) {
+func getUUID(ctx context.Context) (string, context.Context) {
 	var md, _ = metadata.FromIncomingContext(ctx)
 	var values = md.Get(kLogUUID)
 

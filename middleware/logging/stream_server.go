@@ -18,7 +18,7 @@ func WithStreamServer(opts ...Option) grpc.ServerOption {
 
 func streamServerLog(defaultOption *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		var id, _ = getLogUUID(ss.Context())
+		var id, _ = getUUID(ss.Context())
 
 		defaultOption.logger.Printf("[%s] GRPC 流 [%s] 建立成功 \n", id, info.FullMethod)
 

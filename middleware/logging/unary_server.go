@@ -18,7 +18,7 @@ func WithUnaryServer(opts ...Option) grpc.ServerOption {
 
 func unaryServerLog(defaultOption *option) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		var id, nCtx = getLogUUID(ctx)
+		var id, nCtx = getUUID(ctx)
 
 		defaultOption.logger.Printf("[%s] GRPC 接口 [%s] 收到访问请求，请求参数 [%v] \n", id, info.FullMethod, req)
 
