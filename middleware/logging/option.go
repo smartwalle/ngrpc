@@ -1,7 +1,14 @@
 package logging
 
 import (
+	"context"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+)
+
+const (
+	kLogUUID = "Log-UUID"
 )
 
 type Option struct {
@@ -49,4 +56,24 @@ func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, ret
 		}
 	}
 	return grpcOptions, retryOptions
+}
+
+func getLogUUID(ctx context.Context) (string, context.Context) {
+	var md, _ = metadata.FromIncomingContext(ctx)
+	var values = md.Get(kLogUUID)
+
+	if md == nil {
+		md = metadata.MD{}
+	}
+
+	var id string
+	if len(values) > 0 && values[0] != "" {
+		id = values[0]
+	} else {
+		id = uuid.NewString()
+		md.Set(kLogUUID, id)
+	}
+
+	var nCtx = metadata.NewOutgoingContext(ctx, md)
+	return id, nCtx
 }

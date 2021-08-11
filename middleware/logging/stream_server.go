@@ -17,15 +17,17 @@ func WithStreamServer(opts ...Option) grpc.ServerOption {
 
 func streamServerLog(defaultOption *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		defaultOption.logger.Printf("GRPC 流 [%s] 建立成功 \n", info.FullMethod)
+		var id, _ = getLogUUID(ss.Context())
+
+		defaultOption.logger.Printf("[%s] GRPC 流 [%s] 建立成功 \n", id, info.FullMethod)
 
 		var start = time.Now()
 		var err = handler(srv, ss)
 		var end = time.Now()
 		if err != nil && err != io.EOF {
-			defaultOption.logger.Printf("GRPC 流 [%s] 异常关闭, 流持续时间 [%v], 错误信息 [%v] \n", info.FullMethod, end.Sub(start), err)
+			defaultOption.logger.Printf("[%s] GRPC 流 [%s] 异常关闭, 流持续时间 [%v], 错误信息 [%v] \n", id, info.FullMethod, end.Sub(start), err)
 		} else {
-			defaultOption.logger.Printf("GRPC 流 [%s] 正常关闭, 流持续时间 [%v] \n", info.FullMethod, end.Sub(start))
+			defaultOption.logger.Printf("[%s] GRPC 流 [%s] 正常关闭, 流持续时间 [%v] \n", id, info.FullMethod, end.Sub(start))
 		}
 		return err
 	}

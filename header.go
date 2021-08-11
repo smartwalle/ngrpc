@@ -18,6 +18,9 @@ func NewHeader() *Header {
 func HeaderFrom(ctx context.Context) *Header {
 	var h = &Header{}
 	h.md, _ = metadata.FromIncomingContext(ctx)
+	if h.md == nil {
+		h.md = metadata.MD{}
+	}
 	return h
 }
 
