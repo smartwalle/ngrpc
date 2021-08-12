@@ -11,20 +11,23 @@ type Option struct {
 }
 
 type option struct {
-	tracer opentracing.Tracer
+	tracer  opentracing.Tracer
+	disable bool
 }
 
 func Disable() Option {
-	return WithTracer(nil)
+	return Option{
+		apply: func(opt *option) {
+			opt.disable = true
+		},
+	}
 }
 
 func WithTracer(tracer opentracing.Tracer) Option {
-	if tracer == nil {
-		tracer = &opentracing.NoopTracer{}
-	}
 	return Option{
 		apply: func(opt *option) {
 			opt.tracer = tracer
+			opt.disable = false
 		},
 	}
 }

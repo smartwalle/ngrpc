@@ -17,6 +17,10 @@ func WithUnaryServer(opts ...Option) grpc.ServerOption {
 
 func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		if defaultOption.disable {
+			return handler(ctx, req)
+		}
+
 		var nCtx, nSpan, err = serverSpanFromContext(ctx, defaultOption.tracer, fmt.Sprintf("[GRPC Server] %s", info.FullMethod))
 		if err != nil {
 			return nil, err
