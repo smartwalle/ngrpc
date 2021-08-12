@@ -13,14 +13,19 @@ type HelloService struct {
 func (this *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.World, error) {
 	var rsp = &proto.World{}
 	rsp.Message = fmt.Sprintf("收到来自 %s 的消息", in.Name)
-	//time.Sleep(time.Second * 100)
 	return rsp, nil
 }
 
 func (this *HelloService) Stream(s proto.HelloWorld_StreamServer) error {
 	for {
-		_, err := s.Recv()
+		m, err := s.Recv()
 		if err != nil {
+			return err
+		}
+
+		var w = &proto.World{}
+		w.Message = fmt.Sprintf("收到来自 %s 的消息", m.Name)
+		if err = s.Send(w); err != nil {
 			return err
 		}
 	}

@@ -5,12 +5,19 @@ import (
 	"github.com/smartwalle/grpc4go/demo"
 	"github.com/smartwalle/grpc4go/demo/proto"
 	"github.com/smartwalle/grpc4go/etcd"
+	"github.com/smartwalle/grpc4go/middleware/logging"
 	"github.com/smartwalle/log4go"
 )
 
 func main() {
+	log4go.SharedInstance().DisablePath()
+
 	var r = etcd.NewRegistry(demo.GetETCDClient())
-	var s, err = grpc4go.NewServer("grpc2", "hello", "cmd2", r, grpc4go.WithRegisterTTL(5))
+	var s, err = grpc4go.NewServer("grpc2", "hello", "cmd2",
+		r,
+		grpc4go.WithRegisterTTL(5),
+		logging.WithUnaryServer(logging.WithLogger(log4go.SharedInstance()), logging.WithPayload(false)),
+		logging.WithStreamServer(logging.WithLogger(log4go.SharedInstance()), logging.WithPayload(true)))
 	if err != nil {
 		log4go.Println("创建服务发生错误:", err)
 		return
