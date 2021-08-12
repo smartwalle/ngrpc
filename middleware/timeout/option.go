@@ -15,10 +15,10 @@ type option struct {
 }
 
 func Disable() CallOption {
-	return WithTimeout(0)
+	return WithValue(0)
 }
 
-func WithTimeout(timeout time.Duration) CallOption {
+func WithValue(timeout time.Duration) CallOption {
 	return CallOption{apply: func(opt *option) {
 		opt.timeout = timeout
 	}}
