@@ -22,13 +22,13 @@ func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
 		var grpcOpts, retryOpts = filterOptions(opts)
 		var callOption = mergeOptions(defaultOption, retryOpts)
 
-		callOption.logger.Printf("[%s] GRPC 请求建立流 [%s - %s] \n", id, cc.Target(), method)
+		callOption.logger.Printf("[%s] GRPC 请求建立流: [%s - %s] \n", id, cc.Target(), method)
 
 		var stream, err = streamer(nCtx, desc, cc, method, grpcOpts...)
 		if err != nil {
-			callOption.logger.Printf("[%s] GRPC 建立到 [%s - %s] 的流发生错误 [%v] \n", id, cc.Target(), method, err)
+			callOption.logger.Printf("[%s] GRPC 建立流失败: [%s - %s], 错误信息: [%v] \n", id, cc.Target(), method, err)
 		} else {
-			callOption.logger.Printf("[%s] GRPC 建立到 [%s - %s] 的流成功 \n", id, cc.Target(), method)
+			callOption.logger.Printf("[%s] GRPC 建立流成功: [%s - %s] \n", id, cc.Target(), method)
 		}
 
 		if stream == nil {
@@ -54,9 +54,9 @@ func (this *clientStream) SendMsg(m interface{}) error {
 	var err = this.ClientStream.SendMsg(m)
 	if this.opt.payload {
 		if err != nil {
-			this.opt.logger.Printf("[%s] GRPC 流发送消息 [%v] 发生错误 [%v] \n", this.logId, m, err)
+			this.opt.logger.Printf("[%s] GRPC 流发送消息失败: [%v], 错误信息: [%v] \n", this.logId, m, err)
 		} else {
-			this.opt.logger.Printf("[%s] GRPC 流发送消息 [%v] 成功 \n", this.logId, m)
+			this.opt.logger.Printf("[%s] GRPC 流发送消息成功: [%v] \n", this.logId, m)
 		}
 	}
 	return err
@@ -66,9 +66,9 @@ func (this *clientStream) RecvMsg(m interface{}) error {
 	var err = this.ClientStream.RecvMsg(m)
 	if this.opt.payload {
 		if err != nil {
-			this.opt.logger.Printf("[%s] GRPC 流接收消息发生错误 [%v] \n", this.logId, err)
+			this.opt.logger.Printf("[%s] GRPC 流接收消息失败: [%v] \n", this.logId, err)
 		} else {
-			this.opt.logger.Printf("[%s] GRPC 流接收消息 [%v] 成功 \n", this.logId, m)
+			this.opt.logger.Printf("[%s] GRPC 流接收消息成功: [%v] \n", this.logId, m)
 		}
 	}
 	return err
