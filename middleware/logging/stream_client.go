@@ -19,8 +19,8 @@ func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		var id, nCtx = getUUID(ctx)
 
-		var grpcOpts, retryOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, retryOpts)
+		var grpcOpts, logOpts = filterOptions(opts)
+		var callOption = mergeOptions(defaultOption, logOpts)
 
 		callOption.logger.Printf("[%s] GRPC 请求建立流: [%s - %s] \n", id, cc.Target(), method)
 

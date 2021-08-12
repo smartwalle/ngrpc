@@ -19,8 +19,8 @@ func unaryClientLog(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(pCtx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var id, nCtx = getUUID(pCtx)
 
-		var grpcOpts, retryOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, retryOpts)
+		var grpcOpts, logOpts = filterOptions(opts)
+		var callOption = mergeOptions(defaultOption, logOpts)
 
 		callOption.logger.Printf("[%s] GRPC 调用接口: [%s - %s], 请求参数: [%v] \n", id, cc.Target(), method, req)
 

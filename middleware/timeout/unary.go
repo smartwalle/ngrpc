@@ -17,8 +17,8 @@ func WithUnaryClient(opts ...CallOption) grpc.DialOption {
 
 func unaryClientTimeout(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(pCtx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		var grpcOpts, retryOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, retryOpts)
+		var grpcOpts, timeoutOpts = filterOptions(opts)
+		var callOption = mergeOptions(defaultOption, timeoutOpts)
 
 		var err error
 
