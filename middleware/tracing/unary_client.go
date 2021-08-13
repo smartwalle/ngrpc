@@ -9,7 +9,8 @@ import (
 
 func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
-		tracer: opentracing.GlobalTracer(),
+		tracer:  opentracing.GlobalTracer(),
+		payload: true,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.WithChainUnaryInterceptor(unaryClientTracing(defaultOption))
@@ -33,6 +34,12 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 		}
 
 		err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
+
+		if callOption.payload {
+			if err == nil && reply != nil {
+				nSpan.LogKV("Recv", reply)
+			}
+		}
 
 		finish(nSpan, err)
 		return err
