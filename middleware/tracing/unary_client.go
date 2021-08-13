@@ -28,7 +28,7 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 			return err
 		}
 		err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
-		nSpan.Finish()
+		finish(nSpan, err)
 		return err
 	}
 }

@@ -26,7 +26,7 @@ func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
 			return nil, err
 		}
 		rsp, err := handler(nCtx, req)
-		nSpan.Finish()
+		finish(nSpan, err)
 		return rsp, err
 	}
 }

@@ -3,7 +3,9 @@ package tracing
 import (
 	"context"
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/smartwalle/grpc4go"
+	"io"
 )
 
 func clientSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
@@ -42,4 +44,12 @@ func serverSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name 
 
 	var nCtx = opentracing.ContextWithSpan(header.Context(ctx), nSpan)
 	return nCtx, nSpan, nil
+}
+
+func finish(span opentracing.Span, err error) {
+	if err != nil && err != io.EOF {
+		ext.Error.Set(span, true)
+		span.LogKV("error", err.Error())
+	}
+	span.Finish()
 }
