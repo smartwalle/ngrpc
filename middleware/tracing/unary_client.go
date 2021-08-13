@@ -27,7 +27,13 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 		if err != nil {
 			return err
 		}
+
+		if callOption.payload {
+			nSpan.LogKV("Req", req)
+		}
+
 		err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
+
 		finish(nSpan, err)
 		return err
 	}

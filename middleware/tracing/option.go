@@ -12,6 +12,7 @@ type Option struct {
 
 type option struct {
 	tracer  opentracing.Tracer
+	payload bool
 	disable bool
 }
 
@@ -28,6 +29,14 @@ func WithTracer(tracer opentracing.Tracer) Option {
 		apply: func(opt *option) {
 			opt.tracer = tracer
 			opt.disable = false
+		},
+	}
+}
+
+func WithPayload(payload bool) Option {
+	return Option{
+		apply: func(opt *option) {
+			opt.payload = payload
 		},
 	}
 }

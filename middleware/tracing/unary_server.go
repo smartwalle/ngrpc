@@ -25,8 +25,13 @@ func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
 		if err != nil {
 			return nil, err
 		}
-		rsp, err := handler(nCtx, req)
+		resp, err := handler(nCtx, req)
+
+		if defaultOption.payload {
+			nSpan.LogKV("Resp", resp)
+		}
+
 		finish(nSpan, err)
-		return rsp, err
+		return resp, err
 	}
 }
