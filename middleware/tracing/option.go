@@ -24,11 +24,18 @@ func Disable() Option {
 	}
 }
 
+func Enable() Option {
+	return Option{
+		apply: func(opt *option) {
+			opt.disable = false
+		},
+	}
+}
+
 func WithTracer(tracer opentracing.Tracer) Option {
 	return Option{
 		apply: func(opt *option) {
 			opt.tracer = tracer
-			opt.disable = false
 		},
 	}
 }
