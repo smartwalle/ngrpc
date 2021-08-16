@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/log"
 	"github.com/smartwalle/grpc4go"
+	"google.golang.org/grpc/metadata"
 	"io"
 )
 
@@ -52,4 +54,14 @@ func finish(span opentracing.Span, err error) {
 		span.LogKV("error", err.Error())
 	}
 	span.Finish()
+}
+
+func logHeader(span opentracing.Span, md metadata.MD) {
+	var fields = make([]log.Field, 0, len(md))
+	for key, values := range md {
+		for _, value := range values {
+			fields = append(fields, log.String(key, value))
+		}
+	}
+	span.LogFields(fields...)
 }

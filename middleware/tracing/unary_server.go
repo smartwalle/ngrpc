@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
-		tracer:  opentracing.GlobalTracer(),
-		payload: true,
+		tracer: opentracing.GlobalTracer(),
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainUnaryInterceptor(unaryServerTracing(defaultOption))
@@ -28,6 +28,9 @@ func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
 		}
 
 		if defaultOption.payload {
+			var md, _ = metadata.FromIncomingContext(ctx)
+			logHeader(nSpan, md)
+
 			nSpan.LogKV("Req", req)
 		}
 

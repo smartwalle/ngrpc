@@ -30,6 +30,11 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 			return nil, err
 		}
 
+		if callOption.payload {
+			var md, _ = metadata.FromOutgoingContext(ctx)
+			logHeader(nSpan, md)
+		}
+
 		stream, err := streamer(nCtx, desc, cc, method, grpcOpts...)
 
 		// 1

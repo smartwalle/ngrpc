@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
-		tracer:  opentracing.GlobalTracer(),
-		payload: true,
+		tracer: opentracing.GlobalTracer(),
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.WithChainUnaryInterceptor(unaryClientTracing(defaultOption))
@@ -30,6 +30,9 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 		}
 
 		if callOption.payload {
+			var md, _ = metadata.FromOutgoingContext(ctx)
+			logHeader(nSpan, md)
+
 			nSpan.LogKV("Req", req)
 		}
 

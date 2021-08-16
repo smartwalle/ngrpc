@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func WithStreamServer(opts ...Option) grpc.ServerOption {
@@ -25,6 +26,11 @@ func streamServerTracing(defaultOption *option) grpc.StreamServerInterceptor {
 		var nCtx, nSpan, err = serverSpanFromContext(ss.Context(), defaultOption.tracer, fmt.Sprintf("[GRPC Server Stream] %s", info.FullMethod))
 		if err != nil {
 			return err
+		}
+
+		if defaultOption.payload {
+			var md, _ = metadata.FromIncomingContext(ss.Context())
+			logHeader(nSpan, md)
 		}
 
 		var nStream = &serverStream{
