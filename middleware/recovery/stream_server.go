@@ -13,7 +13,7 @@ func streamServerRecovery(defaultOption *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = recoverFrom(ss.Context(), defaultOption, r)
+				err = errorFrom(ss.Context(), defaultOption, r)
 			}
 		}()
 		err = handler(srv, ss)

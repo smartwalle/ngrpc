@@ -9,7 +9,7 @@ type Limiter interface {
 	Allow() bool
 }
 
-func limit(opt *option, method string) error {
+func errorFrom(opt *option, method string) error {
 	if opt.handler != nil {
 		return opt.handler(method)
 	}

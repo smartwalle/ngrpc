@@ -9,13 +9,13 @@ func WithStreamServer(limiter Limiter, opts ...Option) grpc.ServerOption {
 		limiter: limiter,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainStreamInterceptor(streamServerTracing(defaultOption))
+	return grpc.ChainStreamInterceptor(streamServerLimit(defaultOption))
 }
 
-func streamServerTracing(defaultOption *option) grpc.StreamServerInterceptor {
+func streamServerLimit(defaultOption *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		if defaultOption.limiter != nil && defaultOption.limiter.Allow() == false {
-			return limit(defaultOption, info.FullMethod)
+			return errorFrom(defaultOption, info.FullMethod)
 		}
 		return handler(srv, ss)
 	}

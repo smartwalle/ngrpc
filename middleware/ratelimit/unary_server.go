@@ -10,13 +10,13 @@ func WithUnaryServer(limiter Limiter, opts ...Option) grpc.ServerOption {
 		limiter: limiter,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainUnaryInterceptor(unaryServerTracing(defaultOption))
+	return grpc.ChainUnaryInterceptor(unaryServerLimit(defaultOption))
 }
 
-func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
+func unaryServerLimit(defaultOption *option) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if defaultOption.limiter != nil && defaultOption.limiter.Allow() == false {
-			return nil, limit(defaultOption, info.FullMethod)
+			return nil, errorFrom(defaultOption, info.FullMethod)
 		}
 		return handler(ctx, req)
 	}

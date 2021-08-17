@@ -20,7 +20,7 @@ func unaryServerRecovery(defaultOption *option) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = recoverFrom(ctx, defaultOption, r)
+				err = errorFrom(ctx, defaultOption, r)
 			}
 		}()
 		resp, err = handler(ctx, req)
@@ -28,7 +28,7 @@ func unaryServerRecovery(defaultOption *option) grpc.UnaryServerInterceptor {
 	}
 }
 
-func recoverFrom(ctx context.Context, opt *option, r interface{}) error {
+func errorFrom(ctx context.Context, opt *option, r interface{}) error {
 	if opt.handler != nil {
 		return opt.handler(ctx, r)
 	}
