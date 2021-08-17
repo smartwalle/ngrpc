@@ -13,10 +13,10 @@ import (
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{}
 	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainUnaryInterceptor(unaryRecovery(defaultOption))
+	return grpc.ChainUnaryInterceptor(unaryServerRecovery(defaultOption))
 }
 
-func unaryRecovery(defaultOption *option) grpc.UnaryServerInterceptor {
+func unaryServerRecovery(defaultOption *option) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		defer func() {
 			if r := recover(); r != nil {

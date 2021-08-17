@@ -6,10 +6,10 @@ import "google.golang.org/grpc"
 func WithStreamServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{}
 	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainStreamInterceptor(streamRecovery(defaultOption))
+	return grpc.ChainStreamInterceptor(streamServerRecovery(defaultOption))
 }
 
-func streamRecovery(defaultOption *option) grpc.StreamServerInterceptor {
+func streamServerRecovery(defaultOption *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 		defer func() {
 			if r := recover(); r != nil {
