@@ -7,7 +7,7 @@ import (
 )
 
 // WithUnaryClient 普通方法调用超时处理
-func WithUnaryClient(opts ...CallOption) grpc.DialOption {
+func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		timeout: 5 * time.Second,
 	}
@@ -16,26 +16,23 @@ func WithUnaryClient(opts ...CallOption) grpc.DialOption {
 }
 
 func unaryClientTimeout(defaultOption *option) grpc.UnaryClientInterceptor {
-	return func(pCtx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, timeoutOpts = filterOptions(opts)
 		var callOption = mergeOptions(defaultOption, timeoutOpts)
 
-		var err error
-
-		var nCtx, cancel = callContext(pCtx, callOption)
+		var nCtx, cancel = callContext(ctx, callOption)
 		defer func() {
 			if cancel != nil {
 				cancel()
 			}
 		}()
-		err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
 
-		return err
+		return invoker(nCtx, method, req, reply, cc, grpcOpts...)
 	}
 }
 
-func callContext(pCtx context.Context, callOption *option) (context.Context, context.CancelFunc) {
-	var nCtx = pCtx
+func callContext(ctx context.Context, callOption *option) (context.Context, context.CancelFunc) {
+	var nCtx = ctx
 	var cancel context.CancelFunc
 	if callOption.timeout > 0 {
 		nCtx, cancel = context.WithTimeout(nCtx, callOption.timeout)

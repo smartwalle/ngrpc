@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type CallOption struct {
+type Option struct {
 	grpc.EmptyCallOption
 	apply func(*option)
 }
@@ -14,17 +14,17 @@ type option struct {
 	timeout time.Duration
 }
 
-func Disable() CallOption {
+func Disable() Option {
 	return WithValue(0)
 }
 
-func WithValue(timeout time.Duration) CallOption {
-	return CallOption{apply: func(opt *option) {
+func WithValue(timeout time.Duration) Option {
+	return Option{apply: func(opt *option) {
 		opt.timeout = timeout
 	}}
 }
 
-func mergeOptions(opt *option, callOptions []CallOption) *option {
+func mergeOptions(opt *option, callOptions []Option) *option {
 	if len(callOptions) == 0 {
 		return opt
 	}
@@ -36,9 +36,9 @@ func mergeOptions(opt *option, callOptions []CallOption) *option {
 	return nOpt
 }
 
-func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, retryOptions []CallOption) {
+func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, retryOptions []Option) {
 	for _, inOpt := range inOpts {
-		if opt, ok := inOpt.(CallOption); ok {
+		if opt, ok := inOpt.(Option); ok {
 			retryOptions = append(retryOptions, opt)
 		} else {
 			grpcOptions = append(grpcOptions, inOpt)
