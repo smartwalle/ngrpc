@@ -52,7 +52,7 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 		if err != nil {
 			return nil, err
 		}
-		nCtx, nSpan, err = clientSpanFromContext(nCtx, callOption.tracer, fmt.Sprintf("[GRPC Client Stream] %s", method))
+		nCtx, nSpan, err = clientSpanFromContext(nCtx, callOption.tracer, fmt.Sprintf("[GRPC Client Stream] %s", callOption.opName(ctx, method)))
 		if err != nil {
 			return nil, err
 		}
