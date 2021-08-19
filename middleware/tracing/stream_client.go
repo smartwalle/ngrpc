@@ -52,12 +52,14 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 		if err != nil {
 			return nil, err
 		}
-		nCtx, nSpan, err = clientSpanFromContext(nCtx, callOption.tracer, fmt.Sprintf("[GRPC Client Stream] %s", callOption.opName(ctx, method)))
-		if err != nil {
-			return nil, err
+
+		var nStream = &clientStream{ClientStream: stream,
+			finished: false,
+			opt:      callOption,
+			opName:   callOption.opName(nCtx, method),
 		}
 
-		return &clientStream{ClientStream: stream, finished: false, span: nSpan}, err
+		return nStream, err
 	}
 }
 
@@ -65,7 +67,8 @@ type clientStream struct {
 	grpc.ClientStream
 	mu       sync.Mutex
 	finished bool
-	span     opentracing.Span
+	opt      *option
+	opName   string
 }
 
 func (this *clientStream) Header() (metadata.MD, error) {
@@ -98,11 +101,17 @@ func (this *clientStream) RecvMsg(m interface{}) error {
 	return err
 }
 
+func (this *clientStream) span() opentracing.Span {
+	_, nSpan, _ := clientSpanFromContext(this.Context(), this.opt.tracer, fmt.Sprintf("[GRPC Client Stream Close] %s", this.opName))
+	return nSpan
+}
+
 func (this *clientStream) finish(err error) {
 	this.mu.Lock()
 	defer this.mu.Unlock()
-	if !this.finished {
-		finish(this.span, err)
+	if this.finished == false {
+		var span = this.span()
+		finish(span, err)
 		this.finished = true
 	}
 }
