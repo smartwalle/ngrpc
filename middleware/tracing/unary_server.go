@@ -30,7 +30,7 @@ func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
 
 		if defaultOption.payload {
 			var md, _ = metadata.FromIncomingContext(ctx)
-			logHeader(nSpan, md)
+			traceHeader(nSpan, md)
 
 			nSpan.LogKV("Req", req)
 		}

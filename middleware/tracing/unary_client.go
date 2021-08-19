@@ -32,7 +32,7 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 
 		if callOption.payload {
 			var md, _ = metadata.FromOutgoingContext(ctx)
-			logHeader(nSpan, md)
+			traceHeader(nSpan, md)
 
 			nSpan.LogKV("Req", req)
 		}

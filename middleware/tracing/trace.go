@@ -56,7 +56,7 @@ func finish(span opentracing.Span, err error) {
 	span.Finish()
 }
 
-func logHeader(span opentracing.Span, md metadata.MD) {
+func traceHeader(span opentracing.Span, md metadata.MD) {
 	var fields = make([]log.Field, 0, len(md))
 	for key, values := range md {
 		for _, value := range values {

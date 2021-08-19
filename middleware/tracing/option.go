@@ -14,10 +14,11 @@ type Option struct {
 }
 
 type option struct {
-	tracer  opentracing.Tracer
-	payload bool
-	disable bool
-	opName  OperationName
+	tracer        opentracing.Tracer
+	payload       bool
+	streamPayload bool
+	disable       bool
+	opName        OperationName
 }
 
 func Disable() Option {
@@ -48,6 +49,14 @@ func WithPayload(payload bool) Option {
 	return Option{
 		apply: func(opt *option) {
 			opt.payload = payload
+		},
+	}
+}
+
+func WithStreamPayload(payload bool) Option {
+	return Option{
+		apply: func(opt *option) {
+			opt.streamPayload = payload
 		},
 	}
 }

@@ -21,19 +21,19 @@ func WithStreamClient(opts ...Option) grpc.DialOption {
 func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		var grpcOpts, traceOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, traceOpts)
-		if callOption.disable {
+		var opt = mergeOptions(defaultOption, traceOpts)
+		if opt.disable {
 			return streamer(ctx, desc, cc, method, grpcOpts...)
 		}
 
-		var nCtx, nSpan, err = clientSpanFromContext(ctx, callOption.tracer, fmt.Sprintf("[GRPC Client Stream] %s", callOption.opName(ctx, method)))
+		var nCtx, nSpan, err = clientSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Client Stream] %s", opt.opName(ctx, method)))
 		if err != nil {
 			return nil, err
 		}
 
-		if callOption.payload {
+		if opt.payload {
 			var md, _ = metadata.FromOutgoingContext(ctx)
-			logHeader(nSpan, md)
+			traceHeader(nSpan, md)
 		}
 
 		stream, err := streamer(nCtx, desc, cc, method, grpcOpts...)
@@ -43,10 +43,18 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 			return nil, err
 		}
 
+		var pCtx context.Context
+		if opt.streamPayload {
+			var pSpan opentracing.Span
+			pCtx, pSpan, _ = clientSpanFromContext(nCtx, opt.tracer, fmt.Sprintf("[Payload] %s", opt.opName(ctx, method)))
+			pSpan.Finish()
+		}
+
 		var nStream = &clientStream{ClientStream: stream,
 			finished: false,
-			opt:      callOption,
-			opName:   callOption.opName(nCtx, method),
+			opt:      opt,
+			opName:   opt.opName(ctx, method),
+			pCtx:     pCtx,
 		}
 
 		return nStream, err
@@ -59,6 +67,7 @@ type clientStream struct {
 	finished bool
 	opt      *option
 	opName   string
+	pCtx     context.Context
 }
 
 func (this *clientStream) Header() (metadata.MD, error) {
@@ -71,6 +80,7 @@ func (this *clientStream) Header() (metadata.MD, error) {
 
 func (this *clientStream) SendMsg(m interface{}) error {
 	var err = this.ClientStream.SendMsg(m)
+	this.trace("Send", m, err)
 	if err != nil {
 		this.finish(err)
 	}
@@ -85,10 +95,19 @@ func (this *clientStream) CloseSend() error {
 
 func (this *clientStream) RecvMsg(m interface{}) error {
 	var err = this.ClientStream.RecvMsg(m)
+	this.trace("Recv", m, err)
 	if err != nil {
 		this.finish(err)
 	}
 	return err
+}
+
+func (this *clientStream) trace(name string, m interface{}, err error) {
+	if this.pCtx != nil && this.finished == false {
+		var _, nSpan, _ = clientSpanFromContext(this.pCtx, this.opt.tracer, fmt.Sprintf("[%s] %s", name, this.opName))
+		nSpan.LogKV(name, m)
+		finish(nSpan, err)
+	}
 }
 
 func (this *clientStream) finish(err error) {
