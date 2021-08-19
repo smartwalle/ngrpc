@@ -1,9 +1,12 @@
 package tracing
 
 import (
+	"context"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 )
+
+type OperationName func(ctx context.Context, method string) string
 
 type Option struct {
 	grpc.EmptyCallOption
@@ -14,6 +17,7 @@ type option struct {
 	tracer  opentracing.Tracer
 	payload bool
 	disable bool
+	opName  OperationName
 }
 
 func Disable() Option {
@@ -46,6 +50,21 @@ func WithPayload(payload bool) Option {
 			opt.payload = payload
 		},
 	}
+}
+
+func WithOperationName(h OperationName) Option {
+	if h == nil {
+		h = defaultOperationName
+	}
+	return Option{
+		apply: func(opt *option) {
+			opt.opName = h
+		},
+	}
+}
+
+func defaultOperationName(ctx context.Context, method string) string {
+	return method
 }
 
 func mergeOptions(opt *option, callOptions []Option) *option {

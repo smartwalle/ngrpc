@@ -12,6 +12,7 @@ import (
 func WithStreamClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		tracer: opentracing.GlobalTracer(),
+		opName: defaultOperationName,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.WithChainStreamInterceptor(streamClientTracing(defaultOption))
@@ -25,7 +26,7 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 			return streamer(ctx, desc, cc, method, grpcOpts...)
 		}
 
-		var nCtx, nSpan, err = clientSpanFromContext(ctx, callOption.tracer, fmt.Sprintf("[GRPC Client Stream] %s", method))
+		var nCtx, nSpan, err = clientSpanFromContext(ctx, callOption.tracer, fmt.Sprintf("[GRPC Client Stream] %s", callOption.opName(ctx, method)))
 		if err != nil {
 			return nil, err
 		}

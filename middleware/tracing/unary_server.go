@@ -11,6 +11,7 @@ import (
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
 		tracer: opentracing.GlobalTracer(),
+		opName: defaultOperationName,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainUnaryInterceptor(unaryServerTracing(defaultOption))
@@ -22,7 +23,7 @@ func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
 			return handler(ctx, req)
 		}
 
-		var nCtx, nSpan, err = serverSpanFromContext(ctx, defaultOption.tracer, fmt.Sprintf("[GRPC Server] %s", info.FullMethod))
+		var nCtx, nSpan, err = serverSpanFromContext(ctx, defaultOption.tracer, fmt.Sprintf("[GRPC Server] %s", defaultOption.opName(ctx, info.FullMethod)))
 		if err != nil {
 			return nil, err
 		}

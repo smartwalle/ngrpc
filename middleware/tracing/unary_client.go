@@ -11,6 +11,7 @@ import (
 func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		tracer: opentracing.GlobalTracer(),
+		opName: defaultOperationName,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.WithChainUnaryInterceptor(unaryClientTracing(defaultOption))
@@ -24,7 +25,7 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 			return invoker(ctx, method, req, reply, cc, grpcOpts...)
 		}
 
-		var nCtx, nSpan, err = clientSpanFromContext(ctx, callOption.tracer, fmt.Sprintf("[GRPC Client] %s", method))
+		var nCtx, nSpan, err = clientSpanFromContext(ctx, callOption.tracer, fmt.Sprintf("[GRPC Client] %s", callOption.opName(ctx, method)))
 		if err != nil {
 			return err
 		}
