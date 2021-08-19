@@ -38,16 +38,6 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 
 		stream, err := streamer(nCtx, desc, cc, method, grpcOpts...)
 
-		// 1
-		//if err != nil {
-		//	finish(nSpan, err)
-		//	return nil, err
-		//}
-
-		// 2
-		// 主要作用：
-		// 1. 当客户端程序异常关闭的时候，服务端能够正常记录信息
-		// 2. 当服务端程序异常关闭的时候，客户端能够正常记录信息
 		finish(nSpan, err)
 		if err != nil {
 			return nil, err
@@ -101,17 +91,12 @@ func (this *clientStream) RecvMsg(m interface{}) error {
 	return err
 }
 
-func (this *clientStream) span() opentracing.Span {
-	_, nSpan, _ := clientSpanFromContext(this.Context(), this.opt.tracer, fmt.Sprintf("[GRPC Client Stream Close] %s", this.opName))
-	return nSpan
-}
-
 func (this *clientStream) finish(err error) {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 	if this.finished == false {
-		var span = this.span()
-		finish(span, err)
+		var _, nSpan, _ = clientSpanFromContext(this.Context(), this.opt.tracer, fmt.Sprintf("[GRPC Client Stream Close] %s", this.opName))
+		finish(nSpan, err)
 		this.finished = true
 	}
 }

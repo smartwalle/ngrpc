@@ -19,19 +19,13 @@ func WithStreamServer(opts ...Option) grpc.ServerOption {
 
 func streamServerTracing(defaultOption *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-
 		if defaultOption.disable {
 			return handler(srv, ss)
 		}
 
-		var nCtx, nSpan, err = serverSpanFromContext(ss.Context(), defaultOption.tracer, fmt.Sprintf("[GRPC Server Stream] %s", defaultOption.opName(ss.Context(), info.FullMethod)))
+		var nCtx, err = streamBeginTracing(ss.Context(), defaultOption, info.FullMethod)
 		if err != nil {
 			return err
-		}
-
-		if defaultOption.payload {
-			var md, _ = metadata.FromIncomingContext(ss.Context())
-			logHeader(nSpan, md)
 		}
 
 		var nStream = &serverStream{
@@ -39,9 +33,31 @@ func streamServerTracing(defaultOption *option) grpc.StreamServerInterceptor {
 			ctx:          nCtx,
 		}
 		err = handler(srv, nStream)
-		finish(nSpan, err)
+
+		streamCloseTracing(nCtx, defaultOption, info.FullMethod, err)
+
 		return err
 	}
+}
+
+func streamBeginTracing(ctx context.Context, opt *option, method string) (context.Context, error) {
+	var nCtx, nSpan, err = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server Stream] %s", opt.opName(ctx, method)))
+	if err != nil {
+		return nil, err
+	}
+
+	if opt.payload {
+		var md, _ = metadata.FromIncomingContext(ctx)
+		logHeader(nSpan, md)
+	}
+
+	finish(nSpan, err)
+	return nCtx, nil
+}
+
+func streamCloseTracing(ctx context.Context, opt *option, method string, err error) {
+	var _, nSpan, _ = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server Stream Close] %s", opt.opName(ctx, method)))
+	finish(nSpan, err)
 }
 
 type serverStream struct {
