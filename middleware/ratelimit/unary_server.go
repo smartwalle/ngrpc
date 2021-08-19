@@ -13,10 +13,10 @@ func WithUnaryServer(limiter Limiter, opts ...Option) grpc.ServerOption {
 	return grpc.ChainUnaryInterceptor(unaryServerLimit(defaultOption))
 }
 
-func unaryServerLimit(defaultOption *option) grpc.UnaryServerInterceptor {
+func unaryServerLimit(opt *option) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if defaultOption.limiter != nil && defaultOption.limiter.Allow() == false {
-			return nil, errorFrom(defaultOption, info.FullMethod)
+		if opt.limiter != nil && opt.limiter.Allow() == false {
+			return nil, errorFrom(opt, info.FullMethod)
 		}
 		return handler(ctx, req)
 	}

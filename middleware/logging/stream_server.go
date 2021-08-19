@@ -17,26 +17,26 @@ func WithStreamServer(opts ...Option) grpc.ServerOption {
 	return grpc.ChainStreamInterceptor(streamServerLog(defaultOption))
 }
 
-func streamServerLog(defaultOption *option) grpc.StreamServerInterceptor {
+func streamServerLog(opt *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		var id, nCtx = getUUID(ss.Context())
 
-		defaultOption.logger.Printf("[%s] GRPC 流建立成功: [%s] \n", id, info.FullMethod)
+		opt.logger.Printf("[%s] GRPC 流建立成功: [%s] \n", id, info.FullMethod)
 
 		var nStream = &serverStream{
 			ServerStream: ss,
 			ctx:          nCtx,
 			logId:        id,
-			opt:          defaultOption,
+			opt:          opt,
 		}
 
 		var start = time.Now()
 		var err = handler(srv, nStream)
 		var end = time.Now()
 		if err != nil && err != io.EOF {
-			defaultOption.logger.Printf("[%s] GRPC 流异常关闭: [%s], 持续时间: [%v], 错误信息: [%v] \n", id, info.FullMethod, end.Sub(start), err)
+			opt.logger.Printf("[%s] GRPC 流异常关闭: [%s], 持续时间: [%v], 错误信息: [%v] \n", id, info.FullMethod, end.Sub(start), err)
 		} else {
-			defaultOption.logger.Printf("[%s] GRPC 流正常关闭: [%s], 持续时间: [%v] \n", id, info.FullMethod, end.Sub(start))
+			opt.logger.Printf("[%s] GRPC 流正常关闭: [%s], 持续时间: [%v] \n", id, info.FullMethod, end.Sub(start))
 		}
 		return err
 	}

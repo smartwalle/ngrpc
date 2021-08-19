@@ -27,18 +27,18 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, retryOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, retryOpts)
+		var opt = mergeOptions(defaultOption, retryOpts)
 
 		var err error
 
-		for i := 0; i <= callOption.max; i++ {
+		for i := 0; i <= opt.max; i++ {
 			if i > 0 {
-				if err = retryBackoff(i, ctx, callOption); err != nil {
+				if err = retryBackoff(i, ctx, opt); err != nil {
 					return err
 				}
 			}
 
-			var nCtx = callContext(ctx, callOption)
+			var nCtx = callContext(ctx, opt)
 			err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
 
 			if err == nil {
@@ -48,12 +48,12 @@ func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 			if isContextError(err) {
 				if ctx.Err() != nil {
 					return err
-				} else if callOption.callTimeout != 0 {
+				} else if opt.callTimeout != 0 {
 					continue
 				}
 			}
 
-			if isRetriable(err, callOption) == false {
+			if isRetriable(err, opt) == false {
 				return err
 			}
 		}
@@ -61,10 +61,10 @@ func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 	}
 }
 
-func retryBackoff(i int, ctx context.Context, callOption *option) error {
+func retryBackoff(i int, ctx context.Context, opt *option) error {
 	var waitTime time.Duration = 0
-	if i > 0 && callOption.backoff != nil {
-		waitTime = callOption.backoff(ctx, i)
+	if i > 0 && opt.backoff != nil {
+		waitTime = opt.backoff(ctx, i)
 	}
 	if waitTime > 0 {
 		var timer = time.NewTimer(waitTime)
@@ -78,10 +78,10 @@ func retryBackoff(i int, ctx context.Context, callOption *option) error {
 	return nil
 }
 
-func callContext(ctx context.Context, callOption *option) context.Context {
+func callContext(ctx context.Context, opt *option) context.Context {
 	var nCtx = ctx
-	if callOption.callTimeout > 0 {
-		nCtx, _ = context.WithTimeout(nCtx, callOption.callTimeout)
+	if opt.callTimeout > 0 {
+		nCtx, _ = context.WithTimeout(nCtx, opt.callTimeout)
 	}
 	return nCtx
 }

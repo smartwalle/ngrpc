@@ -20,17 +20,17 @@ func unaryClientLog(defaultOption *option) grpc.UnaryClientInterceptor {
 		var id, nCtx = getUUID(ctx)
 
 		var grpcOpts, logOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, logOpts)
+		var opt = mergeOptions(defaultOption, logOpts)
 
-		callOption.logger.Printf("[%s] GRPC 调用接口: [%s - %s], 请求参数: [%v] \n", id, cc.Target(), method, req)
+		opt.logger.Printf("[%s] GRPC 调用接口: [%s - %s], 请求参数: [%v] \n", id, cc.Target(), method, req)
 
 		var err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
 
-		if callOption.payload {
+		if opt.payload {
 			if err != nil {
-				callOption.logger.Printf("[%s] GRPC 调用失败: [%s - %s], 错误信息: [%v] \n", id, cc.Target(), method, err)
+				opt.logger.Printf("[%s] GRPC 调用失败: [%s - %s], 错误信息: [%v] \n", id, cc.Target(), method, err)
 			} else {
-				callOption.logger.Printf("[%s] GRPC 调用成功: [%s - %s], 返回数据: [%v] \n", id, cc.Target(), method, reply)
+				opt.logger.Printf("[%s] GRPC 调用成功: [%s - %s], 返回数据: [%v] \n", id, cc.Target(), method, reply)
 			}
 		}
 		return err

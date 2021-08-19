@@ -20,17 +20,17 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, traceOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, traceOpts)
-		if callOption.disable {
+		var opt = mergeOptions(defaultOption, traceOpts)
+		if opt.disable {
 			return invoker(ctx, method, req, reply, cc, grpcOpts...)
 		}
 
-		var nCtx, nSpan, err = clientSpanFromContext(ctx, callOption.tracer, fmt.Sprintf("[GRPC Client] %s", callOption.opName(ctx, method)))
+		var nCtx, nSpan, err = clientSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Client] %s", opt.opName(ctx, method)))
 		if err != nil {
 			return err
 		}
 
-		if callOption.payload {
+		if opt.payload {
 			var md, _ = metadata.FromOutgoingContext(ctx)
 			traceHeader(nSpan, md)
 
@@ -39,7 +39,7 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 
 		err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
 
-		if callOption.payload {
+		if opt.payload {
 			if err == nil && reply != nil {
 				nSpan.LogKV("Recv", reply)
 			}

@@ -9,11 +9,11 @@ func WithStreamServer(opts ...Option) grpc.ServerOption {
 	return grpc.ChainStreamInterceptor(streamServerRecovery(defaultOption))
 }
 
-func streamServerRecovery(defaultOption *option) grpc.StreamServerInterceptor {
+func streamServerRecovery(opt *option) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = errorFrom(ss.Context(), defaultOption, r)
+				err = errorFrom(ss.Context(), opt, r)
 			}
 		}()
 		err = handler(srv, ss)

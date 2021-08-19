@@ -20,15 +20,15 @@ func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
 		var id, nCtx = getUUID(ctx)
 
 		var grpcOpts, logOpts = filterOptions(opts)
-		var callOption = mergeOptions(defaultOption, logOpts)
+		var opt = mergeOptions(defaultOption, logOpts)
 
-		callOption.logger.Printf("[%s] GRPC 请求建立流: [%s - %s] \n", id, cc.Target(), method)
+		opt.logger.Printf("[%s] GRPC 请求建立流: [%s - %s] \n", id, cc.Target(), method)
 
 		var stream, err = streamer(nCtx, desc, cc, method, grpcOpts...)
 		if err != nil {
-			callOption.logger.Printf("[%s] GRPC 建立流失败: [%s - %s], 错误信息: [%v] \n", id, cc.Target(), method, err)
+			opt.logger.Printf("[%s] GRPC 建立流失败: [%s - %s], 错误信息: [%v] \n", id, cc.Target(), method, err)
 		} else {
-			callOption.logger.Printf("[%s] GRPC 建立流成功: [%s - %s] \n", id, cc.Target(), method)
+			opt.logger.Printf("[%s] GRPC 建立流成功: [%s - %s] \n", id, cc.Target(), method)
 		}
 
 		if stream == nil {
@@ -38,7 +38,7 @@ func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
 		var nStream = &clientStream{
 			ClientStream: stream,
 			logId:        id,
-			opt:          callOption,
+			opt:          opt,
 		}
 		return nStream, err
 	}
