@@ -91,7 +91,7 @@ func (this *serverStream) Context() context.Context {
 func (this *serverStream) SendMsg(m interface{}) error {
 	var err = this.ServerStream.SendMsg(m)
 	if err != io.EOF && this.pCtx != nil {
-		traceServerStreamPayload(this.pCtx, this.opt.tracer, "Send", this.opName, m, err)
+		traceServerStreamPayload(this.pCtx, this.opt.tracer, "Send", this.opName, this.opt.payloadMarshal(m), err)
 	}
 	return err
 }
@@ -99,7 +99,7 @@ func (this *serverStream) SendMsg(m interface{}) error {
 func (this *serverStream) RecvMsg(m interface{}) error {
 	var err = this.ServerStream.RecvMsg(m)
 	if err != io.EOF && this.pCtx != nil {
-		traceServerStreamPayload(this.pCtx, this.opt.tracer, "Recv", this.opName, m, err)
+		traceServerStreamPayload(this.pCtx, this.opt.tracer, "Recv", this.opName, this.opt.payloadMarshal(m), err)
 	}
 	return err
 }
