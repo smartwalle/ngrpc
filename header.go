@@ -43,6 +43,10 @@ func HeaderFromOutgoing(ctx context.Context) *Header {
 	return h
 }
 
+func (this *Header) Raw() metadata.MD {
+	return this.md
+}
+
 func (this *Header) Set(key, value string) {
 	this.md.Set(key, value)
 }

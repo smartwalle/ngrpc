@@ -11,8 +11,9 @@ import (
 
 func WithStreamServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
-		tracer: opentracing.GlobalTracer(),
-		opName: defaultOperationName,
+		tracer:         opentracing.GlobalTracer(),
+		payloadMarshal: defaultPayloadMarshal,
+		opName:         defaultOperationName,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainStreamInterceptor(streamServerTracing(defaultOption))

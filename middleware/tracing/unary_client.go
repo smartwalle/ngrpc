@@ -10,8 +10,9 @@ import (
 
 func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
-		tracer: opentracing.GlobalTracer(),
-		opName: defaultOperationName,
+		tracer:         opentracing.GlobalTracer(),
+		payloadMarshal: defaultPayloadMarshal,
+		opName:         defaultOperationName,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.WithChainUnaryInterceptor(unaryClientTracing(defaultOption))
@@ -35,14 +36,14 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 			var md, _ = metadata.FromOutgoingContext(ctx)
 			traceHeader(nSpan, md)
 
-			nSpan.LogKV("Req", req)
+			nSpan.LogKV("Req", opt.payloadMarshal(req))
 		}
 
 		err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
 
 		if opt.payload {
 			if err == nil && reply != nil {
-				nSpan.LogKV("Recv", reply)
+				nSpan.LogKV("Recv", opt.payloadMarshal(reply))
 			}
 		}
 

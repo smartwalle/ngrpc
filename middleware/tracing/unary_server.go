@@ -10,8 +10,9 @@ import (
 
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
-		tracer: opentracing.GlobalTracer(),
-		opName: defaultOperationName,
+		tracer:         opentracing.GlobalTracer(),
+		payloadMarshal: defaultPayloadMarshal,
+		opName:         defaultOperationName,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainUnaryInterceptor(unaryServerTracing(defaultOption))
@@ -33,14 +34,14 @@ func unaryServerTracing(opt *option) grpc.UnaryServerInterceptor {
 			var md, _ = metadata.FromIncomingContext(ctx)
 			traceHeader(nSpan, md)
 
-			nSpan.LogKV("Req", req)
+			nSpan.LogKV("Req", opt.payloadMarshal(req))
 		}
 
 		resp, err := handler(nCtx, req)
 
 		if opt.payload {
 			if err == nil && resp != nil {
-				nSpan.LogKV("Resp", resp)
+				nSpan.LogKV("Resp", opt.payloadMarshal(resp))
 			}
 		}
 

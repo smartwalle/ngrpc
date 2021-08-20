@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+type PayloadMarshal func(m interface{}) interface{}
 type OperationName func(ctx context.Context, method string) string
 
 type Option struct {
@@ -14,11 +15,12 @@ type Option struct {
 }
 
 type option struct {
-	tracer        opentracing.Tracer
-	payload       bool
-	streamPayload bool
-	disable       bool
-	opName        OperationName
+	tracer         opentracing.Tracer
+	payload        bool
+	streamPayload  bool
+	payloadMarshal PayloadMarshal
+	disable        bool
+	opName         OperationName
 }
 
 func Disable() Option {
@@ -53,6 +55,17 @@ func WithPayload(payload bool) Option {
 	}
 }
 
+func WithPayloadMarshal(h PayloadMarshal) Option {
+	if h == nil {
+		h = defaultPayloadMarshal
+	}
+	return Option{
+		apply: func(opt *option) {
+			opt.payloadMarshal = h
+		},
+	}
+}
+
 func WithStreamPayload(payload bool) Option {
 	return Option{
 		apply: func(opt *option) {
@@ -70,6 +83,10 @@ func WithOperationName(h OperationName) Option {
 			opt.opName = h
 		},
 	}
+}
+
+func defaultPayloadMarshal(m interface{}) interface{} {
+	return m
 }
 
 func defaultOperationName(ctx context.Context, method string) string {

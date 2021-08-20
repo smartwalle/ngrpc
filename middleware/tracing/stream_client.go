@@ -11,8 +11,9 @@ import (
 
 func WithStreamClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
-		tracer: opentracing.GlobalTracer(),
-		opName: defaultOperationName,
+		tracer:         opentracing.GlobalTracer(),
+		payloadMarshal: defaultPayloadMarshal,
+		opName:         defaultOperationName,
 	}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.WithChainStreamInterceptor(streamClientTracing(defaultOption))
@@ -83,7 +84,7 @@ func (this *clientStream) Header() (metadata.MD, error) {
 func (this *clientStream) SendMsg(m interface{}) error {
 	var err = this.ClientStream.SendMsg(m)
 	if this.pCtx != nil {
-		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Send", this.opName, m, err)
+		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Send", this.opName, this.opt.payloadMarshal(m), err)
 	}
 	if err != nil {
 		this.finish(err)
@@ -100,7 +101,7 @@ func (this *clientStream) CloseSend() error {
 func (this *clientStream) RecvMsg(m interface{}) error {
 	var err = this.ClientStream.RecvMsg(m)
 	if this.pCtx != nil && this.finished == false {
-		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Recv", this.opName, m, err)
+		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Recv", this.opName, this.opt.payloadMarshal(m), err)
 	}
 	if err != nil {
 		this.finish(err)
