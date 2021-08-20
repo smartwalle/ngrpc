@@ -25,8 +25,9 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 		if opt.disable {
 			return streamer(ctx, desc, cc, method, grpcOpts...)
 		}
+		var opName = opt.opName(ctx, method)
 
-		var nCtx, nSpan, err = clientSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Client Stream] %s", opt.opName(ctx, method)))
+		var nCtx, nSpan, err = clientSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Client Stream] %s", opName))
 		if err != nil {
 			return nil, err
 		}
@@ -46,15 +47,16 @@ func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 		var pCtx context.Context
 		if opt.streamPayload {
 			var pSpan opentracing.Span
-			pCtx, pSpan, _ = clientSpanFromContext(nCtx, opt.tracer, fmt.Sprintf("[Payload] %s", opt.opName(ctx, method)))
+			pCtx, pSpan, _ = clientSpanFromContext(nCtx, opt.tracer, fmt.Sprintf("[Payload] %s", opName))
 			pSpan.Finish()
 		}
 
-		var nStream = &clientStream{ClientStream: stream,
-			finished: false,
-			opt:      opt,
-			opName:   opt.opName(ctx, method),
-			pCtx:     pCtx,
+		var nStream = &clientStream{
+			ClientStream: stream,
+			finished:     false,
+			opt:          opt,
+			opName:       opName,
+			pCtx:         pCtx,
 		}
 
 		return nStream, err
@@ -80,7 +82,9 @@ func (this *clientStream) Header() (metadata.MD, error) {
 
 func (this *clientStream) SendMsg(m interface{}) error {
 	var err = this.ClientStream.SendMsg(m)
-	this.trace("Send", m, err)
+	if this.pCtx != nil {
+		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Send", this.opName, m, err)
+	}
 	if err != nil {
 		this.finish(err)
 	}
@@ -95,19 +99,13 @@ func (this *clientStream) CloseSend() error {
 
 func (this *clientStream) RecvMsg(m interface{}) error {
 	var err = this.ClientStream.RecvMsg(m)
-	this.trace("Recv", m, err)
+	if this.pCtx != nil && this.finished == false {
+		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Recv", this.opName, m, err)
+	}
 	if err != nil {
 		this.finish(err)
 	}
 	return err
-}
-
-func (this *clientStream) trace(name string, m interface{}, err error) {
-	if this.pCtx != nil && this.finished == false {
-		var _, nSpan, _ = clientSpanFromContext(this.pCtx, this.opt.tracer, fmt.Sprintf("[%s] %s", name, this.opName))
-		nSpan.LogKV(name, m)
-		finish(nSpan, err)
-	}
 }
 
 func (this *clientStream) finish(err error) {

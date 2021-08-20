@@ -17,18 +17,19 @@ func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	return grpc.ChainUnaryInterceptor(unaryServerTracing(defaultOption))
 }
 
-func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
+func unaryServerTracing(opt *option) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if defaultOption.disable {
+		if opt.disable {
 			return handler(ctx, req)
 		}
+		var opName = opt.opName(ctx, info.FullMethod)
 
-		var nCtx, nSpan, err = serverSpanFromContext(ctx, defaultOption.tracer, fmt.Sprintf("[GRPC Server] %s", defaultOption.opName(ctx, info.FullMethod)))
+		var nCtx, nSpan, err = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server] %s", opName))
 		if err != nil {
 			return nil, err
 		}
 
-		if defaultOption.payload {
+		if opt.payload {
 			var md, _ = metadata.FromIncomingContext(ctx)
 			traceHeader(nSpan, md)
 
@@ -37,7 +38,7 @@ func unaryServerTracing(defaultOption *option) grpc.UnaryServerInterceptor {
 
 		resp, err := handler(nCtx, req)
 
-		if defaultOption.payload {
+		if opt.payload {
 			if err == nil && resp != nil {
 				nSpan.LogKV("Resp", resp)
 			}

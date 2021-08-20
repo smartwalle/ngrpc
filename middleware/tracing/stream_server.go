@@ -23,8 +23,9 @@ func streamServerTracing(opt *option) grpc.StreamServerInterceptor {
 		if opt.disable {
 			return handler(srv, ss)
 		}
+		var opName = opt.opName(ss.Context(), info.FullMethod)
 
-		var nCtx, err = traceSeverStreamBegin(ss.Context(), opt, info.FullMethod)
+		var nCtx, err = traceSeverStreamBegin(ss.Context(), opt, opName)
 		if err != nil {
 			return err
 		}
@@ -32,7 +33,10 @@ func streamServerTracing(opt *option) grpc.StreamServerInterceptor {
 		var pCtx context.Context
 		if opt.streamPayload {
 			var pSpan opentracing.Span
-			pCtx, pSpan, _ = serverSpanFromContext(nCtx, opt.tracer, fmt.Sprintf("[Payload] %s", opt.opName(ss.Context(), info.FullMethod)))
+			pCtx, pSpan, err = serverSpanFromContext(nCtx, opt.tracer, fmt.Sprintf("[Payload] %s", opName))
+			if err != nil {
+				return err
+			}
 			pSpan.Finish()
 		}
 
@@ -40,19 +44,19 @@ func streamServerTracing(opt *option) grpc.StreamServerInterceptor {
 			ServerStream: ss,
 			ctx:          nCtx,
 			opt:          opt,
-			opName:       opt.opName(ss.Context(), info.FullMethod),
+			opName:       opName,
 			pCtx:         pCtx,
 		}
 		err = handler(srv, nStream)
 
-		traceServerStreamClose(nCtx, opt, info.FullMethod, err)
+		traceServerStreamClose(nCtx, opt, opName, err)
 
 		return err
 	}
 }
 
-func traceSeverStreamBegin(ctx context.Context, opt *option, method string) (context.Context, error) {
-	var nCtx, nSpan, err = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server Stream] %s", opt.opName(ctx, method)))
+func traceSeverStreamBegin(ctx context.Context, opt *option, opName string) (context.Context, error) {
+	var nCtx, nSpan, err = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server Stream] %s", opName))
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +70,8 @@ func traceSeverStreamBegin(ctx context.Context, opt *option, method string) (con
 	return nCtx, nil
 }
 
-func traceServerStreamClose(ctx context.Context, opt *option, method string, err error) {
-	var _, nSpan, _ = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server Stream Close] %s", opt.opName(ctx, method)))
+func traceServerStreamClose(ctx context.Context, opt *option, opName string, err error) {
+	var _, nSpan, _ = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server Stream Close] %s", opName))
 	finish(nSpan, err)
 }
 
@@ -85,24 +89,16 @@ func (this *serverStream) Context() context.Context {
 
 func (this *serverStream) SendMsg(m interface{}) error {
 	var err = this.ServerStream.SendMsg(m)
-	this.trace("Send", m, err)
+	if err != io.EOF && this.pCtx != nil {
+		traceServerStreamPayload(this.pCtx, this.opt.tracer, "Send", this.opName, m, err)
+	}
 	return err
 }
 
 func (this *serverStream) RecvMsg(m interface{}) error {
 	var err = this.ServerStream.RecvMsg(m)
-	this.trace("Recv", m, err)
+	if err != io.EOF && this.pCtx != nil {
+		traceServerStreamPayload(this.pCtx, this.opt.tracer, "Recv", this.opName, m, err)
+	}
 	return err
-}
-
-func (this *serverStream) trace(name string, m interface{}, err error) {
-	if err == io.EOF {
-		return
-	}
-
-	if this.pCtx != nil {
-		var _, nSpan, _ = clientSpanFromContext(this.pCtx, this.opt.tracer, fmt.Sprintf("[%s] %s", name, this.opName))
-		nSpan.LogKV(name, m)
-		finish(nSpan, err)
-	}
 }

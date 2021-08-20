@@ -2,6 +2,7 @@ package tracing
 
 import (
 	"context"
+	"fmt"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
@@ -10,7 +11,7 @@ import (
 	"io"
 )
 
-func clientSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
+func clientSpanFromContext(ctx context.Context, tracer opentracing.Tracer, opName string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
 	var header = grpc4go.HeaderFromOutgoing(ctx)
 
 	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
@@ -19,7 +20,7 @@ func clientSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name 
 		opts = append(opts, opentracing.ChildOf(spanCtx))
 	}
 
-	var nSpan = tracer.StartSpan(name, opts...)
+	var nSpan = tracer.StartSpan(opName, opts...)
 
 	if err := nSpan.Tracer().Inject(nSpan.Context(), opentracing.TextMap, header); err != nil {
 		return nil, nil, err
@@ -29,7 +30,7 @@ func clientSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name 
 	return nCtx, nSpan, nil
 }
 
-func serverSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
+func serverSpanFromContext(ctx context.Context, tracer opentracing.Tracer, opName string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
 	var header = grpc4go.HeaderFromIncoming(ctx)
 
 	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
@@ -38,7 +39,7 @@ func serverSpanFromContext(ctx context.Context, tracer opentracing.Tracer, name 
 		opts = append(opts, opentracing.ChildOf(spanCtx))
 	}
 
-	var nSpan = tracer.StartSpan(name, opts...)
+	var nSpan = tracer.StartSpan(opName, opts...)
 
 	if err := nSpan.Tracer().Inject(nSpan.Context(), opentracing.TextMap, header); err != nil {
 		return nil, nil, err
@@ -54,6 +55,18 @@ func finish(span opentracing.Span, err error) {
 		span.LogKV("error", err.Error())
 	}
 	span.Finish()
+}
+
+func traceClientStreamPayload(ctx context.Context, tracer opentracing.Tracer, key, opName string, payload interface{}, err error) {
+	var _, nSpan, _ = clientSpanFromContext(ctx, tracer, fmt.Sprintf("[%s] %s", key, opName))
+	nSpan.LogKV(key, payload)
+	finish(nSpan, err)
+}
+
+func traceServerStreamPayload(ctx context.Context, tracer opentracing.Tracer, key, opName string, payload interface{}, err error) {
+	var _, nSpan, _ = serverSpanFromContext(ctx, tracer, fmt.Sprintf("[%s] %s", key, opName))
+	nSpan.LogKV(key, payload)
+	finish(nSpan, err)
 }
 
 func traceHeader(span opentracing.Span, md metadata.MD) {

@@ -24,8 +24,9 @@ func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 		if opt.disable {
 			return invoker(ctx, method, req, reply, cc, grpcOpts...)
 		}
+		var opName = opt.opName(ctx, method)
 
-		var nCtx, nSpan, err = clientSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Client] %s", opt.opName(ctx, method)))
+		var nCtx, nSpan, err = clientSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Client] %s", opName))
 		if err != nil {
 			return err
 		}
