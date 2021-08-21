@@ -23,6 +23,7 @@ type option struct {
 	opName         OperationName
 }
 
+// Disable 禁用追踪
 func Disable() Option {
 	return Option{
 		apply: func(opt *option) {
@@ -31,6 +32,7 @@ func Disable() Option {
 	}
 }
 
+// Enable 启用追踪
 func Enable() Option {
 	return Option{
 		apply: func(opt *option) {
@@ -39,6 +41,7 @@ func Enable() Option {
 	}
 }
 
+// WithTracer 设置追踪组件
 func WithTracer(tracer opentracing.Tracer) Option {
 	return Option{
 		apply: func(opt *option) {
@@ -47,6 +50,7 @@ func WithTracer(tracer opentracing.Tracer) Option {
 	}
 }
 
+// WithPayload 对于普通方法，用于设置是否需要记录请求头、请求参数及响应数据信息；对于流，用于设置建立流时是否需要记录请求头信息；
 func WithPayload(payload bool) Option {
 	return Option{
 		apply: func(opt *option) {
@@ -55,6 +59,7 @@ func WithPayload(payload bool) Option {
 	}
 }
 
+// WithPayloadMarshal 设置请求参数及响应数据的序列化方式
 func WithPayloadMarshal(h PayloadMarshal) Option {
 	if h == nil {
 		h = defaultPayloadMarshal
@@ -66,6 +71,7 @@ func WithPayloadMarshal(h PayloadMarshal) Option {
 	}
 }
 
+// WithStreamPayload 设置是否需要记录流的发送和接收数据信息，只作用于流操作
 func WithStreamPayload(payload bool) Option {
 	return Option{
 		apply: func(opt *option) {
@@ -74,6 +80,7 @@ func WithStreamPayload(payload bool) Option {
 	}
 }
 
+// WithOperationName 设置操作名称
 func WithOperationName(h OperationName) Option {
 	if h == nil {
 		h = defaultOperationName

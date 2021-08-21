@@ -14,10 +14,12 @@ type option struct {
 	timeout time.Duration
 }
 
+// Disable 禁用超时
 func Disable() Option {
 	return WithValue(0)
 }
 
+// WithValue 设置超时时间
 func WithValue(timeout time.Duration) Option {
 	return Option{apply: func(opt *option) {
 		opt.timeout = timeout

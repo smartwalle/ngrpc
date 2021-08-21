@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// WithUnaryClient 普通方法调用超时处理
+// WithUnaryClient 客户端普通方法调用超时处理
 func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		timeout: 5 * time.Second,

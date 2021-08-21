@@ -1,5 +1,3 @@
-// https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/recovery/interceptors.go
-
 package recovery
 
 import (

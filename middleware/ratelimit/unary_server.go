@@ -5,6 +5,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// WithUnaryServer 服务端普通方法访问限流
 func WithUnaryServer(limiter Limiter, opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
 		limiter: limiter,

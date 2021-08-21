@@ -9,6 +9,7 @@ import (
 	"io"
 )
 
+// WithStreamServer 服务端流操作追踪
 func WithStreamServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
 		tracer:         opentracing.GlobalTracer(),

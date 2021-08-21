@@ -21,28 +21,33 @@ type option struct {
 	backoff     Backoff
 }
 
+// Disable 禁用重试
 func Disable() Option {
 	return WithMax(0)
 }
 
+// WithMax 设置最大重试次数
 func WithMax(max int) Option {
 	return Option{apply: func(opt *option) {
 		opt.max = max
 	}}
 }
 
+// WithTimeout 设置超时时间
 func WithTimeout(timeout time.Duration) Option {
 	return Option{apply: func(opt *option) {
 		opt.callTimeout = timeout
 	}}
 }
 
+// WithCodes 设置支持重试的错误 Code
 func WithCodes(retryCodes ...codes.Code) Option {
 	return Option{apply: func(opt *option) {
 		opt.codes = retryCodes
 	}}
 }
 
+// WithBackoff 设置重试时间延迟
 func WithBackoff(f Backoff) Option {
 	return Option{apply: func(opt *option) {
 		opt.backoff = f

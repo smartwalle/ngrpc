@@ -14,6 +14,7 @@ type option struct {
 	handler Handler
 }
 
+// WithHandler 设置用于处理 panic 信息的回调函数
 func WithHandler(h Handler) Option {
 	return Option{apply: func(opt *option) {
 		opt.handler = h

@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// WithStreamClient 客户端流调用日志处理
+// WithStreamClient 客户端流操作日志处理
 func WithStreamClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		logger:  &nilLogger{},

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// WithStreamClient 客户端建立流超时处理
 func WithStreamClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		timeout: 5 * time.Second,

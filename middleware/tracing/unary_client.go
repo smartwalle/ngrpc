@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// WithUnaryClient 客户端普通方法调用追踪
 func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		tracer:         opentracing.GlobalTracer(),

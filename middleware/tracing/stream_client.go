@@ -9,6 +9,7 @@ import (
 	"sync"
 )
 
+// WithStreamClient 客户端流操作追踪
 func WithStreamClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		tracer:         opentracing.GlobalTracer(),

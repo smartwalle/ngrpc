@@ -16,6 +16,7 @@ type option struct {
 	handler Handler
 }
 
+// WithError 设置触发限流时返回给客户端的错误信息
 func WithError(h Handler) Option {
 	if h == nil {
 		return Option{}

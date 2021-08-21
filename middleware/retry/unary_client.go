@@ -1,5 +1,3 @@
-// https://github.com/grpc-ecosystem/go-grpc-middleware/blob/master/retry/retry.go
-
 package retry
 
 import (
@@ -10,7 +8,7 @@ import (
 	"time"
 )
 
-// WithUnaryClient 普通方法调用重试处理
+// WithUnaryClient 客户端普通方法调用重试处理
 func WithUnaryClient(opts ...Option) grpc.DialOption {
 	var defaultOption = &option{
 		max:         1,

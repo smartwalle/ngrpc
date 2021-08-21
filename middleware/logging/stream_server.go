@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// WithStreamServer 服务端流调用日志处理
+// WithStreamServer 服务端流操作日志处理
 func WithStreamServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
 		logger:  &nilLogger{},

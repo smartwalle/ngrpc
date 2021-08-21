@@ -21,10 +21,12 @@ type option struct {
 	payload bool
 }
 
+// Disable 禁用日志
 func Disable() Option {
 	return WithLogger(&nilLogger{})
 }
 
+// WithLogger 设置日志组件
 func WithLogger(logger Logger) Option {
 	if logger == nil {
 		logger = &nilLogger{}
@@ -36,6 +38,7 @@ func WithLogger(logger Logger) Option {
 	}
 }
 
+// WithPayload 设置是否需要记录请求参数及响应数据信息
 func WithPayload(payload bool) Option {
 	return Option{
 		apply: func(opt *option) {

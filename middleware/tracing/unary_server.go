@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// WithUnaryServer 服务端普通方法响应追踪
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
 		tracer:         opentracing.GlobalTracer(),

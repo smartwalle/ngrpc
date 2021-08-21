@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// WithUnaryServer 服务端普通方法调用日志处理
+// WithUnaryServer 服务端普通方法响应日志处理
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
 		logger:  &nilLogger{},

@@ -4,6 +4,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// WithStreamServer 服务端建立流限流
 func WithStreamServer(limiter Limiter, opts ...Option) grpc.ServerOption {
 	var defaultOption = &option{
 		limiter: limiter,
