@@ -17,7 +17,7 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 
 func unaryClientLog(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		var id, nCtx = getUUID(ctx)
+		var id, nCtx = getLogId(ctx)
 
 		var grpcOpts, logOpts = filterOptions(opts)
 		var opt = mergeOptions(defaultOption, logOpts)

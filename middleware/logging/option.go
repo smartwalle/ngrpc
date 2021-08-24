@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	kLogUUID = "log-uuid"
+	kLogId = "log-id"
 )
 
 type Option struct {
@@ -70,12 +70,12 @@ func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, ret
 	return grpcOptions, retryOptions
 }
 
-func getUUID(ctx context.Context) (string, context.Context) {
+func getLogId(ctx context.Context) (string, context.Context) {
 	var in, _ = metadata.FromIncomingContext(ctx)
 	if in == nil {
 		in = metadata.MD{}
 	}
-	var ids = in.Get(kLogUUID)
+	var ids = in.Get(kLogId)
 
 	var id string
 	if len(ids) > 0 && ids[0] != "" {
@@ -88,7 +88,7 @@ func getUUID(ctx context.Context) (string, context.Context) {
 	if out == nil {
 		out = metadata.MD{}
 	}
-	out.Set(kLogUUID, id)
+	out.Set(kLogId, id)
 
 	var nCtx = metadata.NewOutgoingContext(ctx, out)
 	return id, nCtx
