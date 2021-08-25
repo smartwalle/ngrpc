@@ -38,13 +38,13 @@ func mergeOptions(opt *option, callOptions []Option) *option {
 	return nOpt
 }
 
-func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, retryOptions []Option) {
+func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, nOptions []Option) {
 	for _, inOpt := range inOpts {
 		if opt, ok := inOpt.(Option); ok {
-			retryOptions = append(retryOptions, opt)
+			nOptions = append(nOptions, opt)
 		} else {
 			grpcOptions = append(grpcOptions, inOpt)
 		}
 	}
-	return grpcOptions, retryOptions
+	return grpcOptions, nOptions
 }

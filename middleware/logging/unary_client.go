@@ -17,20 +17,18 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 
 func unaryClientLog(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		var id, nCtx = getLogId(ctx)
+		var grpcOpts, nOpts = filterOptions(opts)
+		var opt = mergeOptions(defaultOption, nOpts)
 
-		var grpcOpts, logOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, logOpts)
+		opt.logger.Printf(ctx, "GRPC 调用接口: [%s - %s], 请求参数: [%v] \n", cc.Target(), method, req)
 
-		opt.logger.Printf("[%s] GRPC 调用接口: [%s - %s], 请求参数: [%v] \n", id, cc.Target(), method, req)
-
-		var err = invoker(nCtx, method, req, reply, cc, grpcOpts...)
+		var err = invoker(ctx, method, req, reply, cc, grpcOpts...)
 
 		if opt.payload {
 			if err != nil {
-				opt.logger.Printf("[%s] GRPC 调用失败: [%s - %s], 错误信息: [%v] \n", id, cc.Target(), method, err)
+				opt.logger.Printf(ctx, "GRPC 调用失败: [%s - %s], 错误信息: [%v] \n", cc.Target(), method, err)
 			} else {
-				opt.logger.Printf("[%s] GRPC 调用成功: [%s - %s], 返回数据: [%v] \n", id, cc.Target(), method, reply)
+				opt.logger.Printf(ctx, "GRPC 调用成功: [%s - %s], 返回数据: [%v] \n", cc.Target(), method, reply)
 			}
 		}
 		return err

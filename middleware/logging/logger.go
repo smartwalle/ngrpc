@@ -1,29 +1,17 @@
 package logging
 
+import "context"
+
 type Logger interface {
-	SetPrefix(prefix string)
-	Prefix() string
-	Println(args ...interface{})
-	Printf(format string, args ...interface{})
-	Output(calldepth int, s string) error
+	Println(ctx context.Context, args ...interface{})
+	Printf(ctx context.Context, format string, args ...interface{})
 }
 
 type nilLogger struct {
 }
 
-func (this *nilLogger) SetPrefix(prefix string) {
+func (this *nilLogger) Println(ctx context.Context, args ...interface{}) {
 }
 
-func (this *nilLogger) Prefix() string {
-	return ""
-}
-
-func (this *nilLogger) Println(args ...interface{}) {
-}
-
-func (this *nilLogger) Printf(format string, args ...interface{}) {
-}
-
-func (this *nilLogger) Output(calldepth int, s string) error {
-	return nil
+func (this *nilLogger) Printf(ctx context.Context, format string, args ...interface{}) {
 }

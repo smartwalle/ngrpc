@@ -21,8 +21,8 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 
 func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-		var grpcOpts, traceOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, traceOpts)
+		var grpcOpts, nOpts = filterOptions(opts)
+		var opt = mergeOptions(defaultOption, nOpts)
 		if opt.disable {
 			return invoker(ctx, method, req, reply, cc, grpcOpts...)
 		}

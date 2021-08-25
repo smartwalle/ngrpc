@@ -22,8 +22,8 @@ func WithStreamClient(opts ...Option) grpc.DialOption {
 
 func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		var grpcOpts, traceOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, traceOpts)
+		var grpcOpts, nOpts = filterOptions(opts)
+		var opt = mergeOptions(defaultOption, nOpts)
 		if opt.disable {
 			return streamer(ctx, desc, cc, method, grpcOpts...)
 		}

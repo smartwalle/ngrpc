@@ -17,8 +17,8 @@ func WithStreamClient(opts ...Option) grpc.DialOption {
 
 func streamClientTimeout(defaultOption *option) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		var grpcOpts, timeoutOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, timeoutOpts)
+		var grpcOpts, nOpts = filterOptions(opts)
+		var opt = mergeOptions(defaultOption, nOpts)
 
 		var nCtx, cancel = callContext(ctx, opt)
 		defer func() {

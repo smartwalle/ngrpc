@@ -1,14 +1,7 @@
 package logging
 
 import (
-	"context"
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
-)
-
-const (
-	kLogId = "log-id"
 )
 
 type Option struct {
@@ -59,37 +52,13 @@ func mergeOptions(opt *option, callOptions []Option) *option {
 	return nOpt
 }
 
-func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, retryOptions []Option) {
+func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, nOptions []Option) {
 	for _, inOpt := range inOpts {
 		if opt, ok := inOpt.(Option); ok {
-			retryOptions = append(retryOptions, opt)
+			nOptions = append(nOptions, opt)
 		} else {
 			grpcOptions = append(grpcOptions, inOpt)
 		}
 	}
-	return grpcOptions, retryOptions
-}
-
-func getLogId(ctx context.Context) (string, context.Context) {
-	var in, _ = metadata.FromIncomingContext(ctx)
-	if in == nil {
-		in = metadata.MD{}
-	}
-	var ids = in.Get(kLogId)
-
-	var id string
-	if len(ids) > 0 && ids[0] != "" {
-		id = ids[0]
-	} else {
-		id = uuid.NewString()
-	}
-
-	var out, _ = metadata.FromOutgoingContext(ctx)
-	if out == nil {
-		out = metadata.MD{}
-	}
-	out.Set(kLogId, id)
-
-	var nCtx = metadata.NewOutgoingContext(ctx, out)
-	return id, nCtx
+	return grpcOptions, nOptions
 }

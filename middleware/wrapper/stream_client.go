@@ -15,8 +15,8 @@ func WithStreamClient(opts ...Option) grpc.DialOption {
 
 func streamClientWrapper(defaultOption *option) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		var grpcOpts, logOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, logOpts)
+		var grpcOpts, nOpts = filterOptions(opts)
+		var opt = mergeOptions(defaultOption, nOpts)
 		ctx = outgoing(ctx, opt)
 		return streamer(ctx, desc, cc, method, grpcOpts...)
 	}
