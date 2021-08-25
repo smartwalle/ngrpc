@@ -1,0 +1,23 @@
+package wrapper
+
+import (
+	"context"
+	"google.golang.org/grpc"
+)
+
+func WithStreamClient(opts ...Option) grpc.DialOption {
+	var defaultOption = &option{
+		handler: defaultWrapper,
+	}
+	defaultOption = mergeOptions(defaultOption, opts)
+	return grpc.WithChainStreamInterceptor(streamClientWrapper(defaultOption))
+}
+
+func streamClientWrapper(defaultOption *option) grpc.StreamClientInterceptor {
+	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		var grpcOpts, logOpts = filterOptions(opts)
+		var opt = mergeOptions(defaultOption, logOpts)
+		ctx = outgoing(ctx, opt)
+		return streamer(ctx, desc, cc, method, grpcOpts...)
+	}
+}
