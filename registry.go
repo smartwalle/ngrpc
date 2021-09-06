@@ -2,12 +2,12 @@ package grpc4go
 
 import "context"
 
-type Resolver interface {
+type Registry interface {
 	Scheme() string
 
 	Register(ctx context.Context, domain, service, node, addr string, ttl int64) (key string, err error)
 
-	Deregister(ctx context.Context, domain, service, node string) (err error)
+	Unregister(ctx context.Context, domain, service, node string) (err error)
 
 	BuildPath(domain, service, node string) string
 
