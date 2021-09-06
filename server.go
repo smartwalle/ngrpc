@@ -13,11 +13,11 @@ type Server struct {
 	service  string
 	node     string
 	listener net.Listener
-	registry Registry
+	resolver Resolver
 	server   *grpc.Server
 }
 
-func NewServer(domain, service, node string, registry Registry, opts ...grpc.ServerOption) (*Server, error) {
+func NewServer(domain, service, node string, resolver Resolver, opts ...grpc.ServerOption) (*Server, error) {
 	var defaultOption = &serverOption{
 		registerTTL: 15,
 	}
@@ -36,7 +36,7 @@ func NewServer(domain, service, node string, registry Registry, opts ...grpc.Ser
 	s.service = service
 	s.node = node
 	s.listener = listener
-	s.registry = registry
+	s.resolver = resolver
 	s.server = grpc.NewServer(grpcOpts...)
 	return s, nil
 }
@@ -73,8 +73,8 @@ func listen(addr string) (net.Listener, error) {
 }
 
 func (this *Server) Name() string {
-	if this.registry != nil {
-		return this.registry.BuildPath(this.domain, this.service, this.node)
+	if this.resolver != nil {
+		return this.resolver.BuildPath(this.domain, this.service, this.node)
 	}
 	return filepath.Join(this.domain, this.service, this.node)
 }
@@ -95,8 +95,8 @@ func (this *Server) Addr() string {
 	return this.listener.Addr().String()
 }
 
-func (this *Server) Registry() Registry {
-	return this.registry
+func (this *Server) Resolver() Resolver {
+	return this.resolver
 }
 
 func (this *Server) Server() *grpc.Server {
@@ -104,8 +104,8 @@ func (this *Server) Server() *grpc.Server {
 }
 
 func (this *Server) Run() error {
-	if this.registry != nil {
-		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), this.opt.registerTTL)
+	if this.resolver != nil {
+		this.resolver.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), this.opt.registerTTL)
 	}
 	if err := this.server.Serve(this.listener); err != nil {
 		this.Stop()
@@ -115,15 +115,15 @@ func (this *Server) Run() error {
 }
 
 func (this *Server) Stop() {
-	if this.registry != nil {
-		this.registry.Deregister(context.Background(), this.domain, this.service, this.node)
+	if this.resolver != nil {
+		this.resolver.Deregister(context.Background(), this.domain, this.service, this.node)
 	}
 	this.server.Stop()
 }
 
 func (this *Server) GracefulStop() {
-	if this.registry != nil {
-		this.registry.Deregister(context.Background(), this.domain, this.service, this.node)
+	if this.resolver != nil {
+		this.resolver.Deregister(context.Background(), this.domain, this.service, this.node)
 	}
 	this.server.GracefulStop()
 }

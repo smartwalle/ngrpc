@@ -2,7 +2,7 @@ package grpc4go
 
 import "context"
 
-type Registry interface {
+type Resolver interface {
 	Scheme() string
 
 	Register(ctx context.Context, domain, service, node, addr string, ttl int64) (key string, err error)
