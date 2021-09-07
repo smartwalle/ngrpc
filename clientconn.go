@@ -32,8 +32,13 @@ func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply i
 			continue
 		}
 
-		err = nConn.Invoke(ctx, method, args, reply, opts...)
 		this.pool.Put(conn)
+
+		err = nConn.Invoke(ctx, method, args, reply, opts...)
+
+		// 等待调用完成才释放 ClientConn，阻塞会比较严重
+		// this.pool.Put(conn)
+
 		return err
 	}
 	return ErrServerNotFound
@@ -54,8 +59,13 @@ func (this *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, me
 			continue
 		}
 
-		stream, err := nConn.NewStream(ctx, desc, method, opts...)
 		this.pool.Put(conn)
+
+		stream, err := nConn.NewStream(ctx, desc, method, opts...)
+
+		// 等待调用完成才释放 ClientConn，阻塞会比较严重
+		// this.pool.Put(conn)
+
 		return stream, err
 	}
 	return nil, ErrServerNotFound
