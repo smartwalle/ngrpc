@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func Dial(target string, opts ...grpc.DialOption) *ClientConn {
+func Dial(target string, opts ...grpc.DialOption) grpc.ClientConnInterface {
 	var defaultOption = &dialOption{
 		poolSize: 1,
 		timeout:  0,
