@@ -18,9 +18,9 @@ type ClientConn struct {
 	retry int32
 }
 
-//func (this *ClientConn) Prepare() {
-//	this.pool.Prepare()
-//}
+func (this *ClientConn) Prepare() {
+	this.pool.Prepare()
+}
 
 func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...grpc.CallOption) error {
 	for i := int32(0); i <= this.retry; i++ {
@@ -67,21 +67,21 @@ func NewClientPool(size int32, fn DialFun) *ClientPool {
 	return p
 }
 
-//func (this *ClientPool) Prepare() {
-//	this.mu.Lock()
-//	defer this.mu.Unlock()
-//	if this.inited == true {
-//		return
-//	}
-//	this.inited = true
-//
-//	for idx := range this.conns {
-//		conn, _ := this.dial()
-//		if conn != nil {
-//			this.conns[idx] = conn
-//		}
-//	}
-//}
+func (this *ClientPool) Prepare() {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+	if this.inited == true {
+		return
+	}
+	this.inited = true
+
+	for idx := range this.conns {
+		conn, _ := this.dial()
+		if conn != nil {
+			this.conns[idx] = conn
+		}
+	}
+}
 
 func (this *ClientPool) Get() (*grpc.ClientConn, error) {
 	var next = atomic.AddInt32(&this.next, 1)
