@@ -36,6 +36,7 @@ func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts
 	var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
 	var watcher = this.client.Watch(context.Background(), key, this.watch(cc), clientv3.WithPrefix())
 	this.mu.Lock()
+	this.update(cc, watcher.Values())
 	this.watchers[key] = watcher
 	this.mu.Unlock()
 	return this, nil
@@ -44,13 +45,17 @@ func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts
 func (this *Registry) watch(cc resolver.ClientConn) func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
 	return func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
 		var paths = watcher.Values()
-		var addrList = make([]resolver.Address, 0, len(paths))
-		for _, nValue := range paths {
-			var addr = resolver.Address{Addr: string(nValue)}
-			addrList = append(addrList, addr)
-		}
-		cc.UpdateState(resolver.State{Addresses: addrList})
+		this.update(cc, paths)
 	}
+}
+
+func (this *Registry) update(cc resolver.ClientConn, paths map[string][]byte) {
+	var addrList = make([]resolver.Address, 0, len(paths))
+	for _, nValue := range paths {
+		var addr = resolver.Address{Addr: string(nValue)}
+		addrList = append(addrList, addr)
+	}
+	cc.UpdateState(resolver.State{Addresses: addrList})
 }
 
 func (this *Registry) Scheme() string {
