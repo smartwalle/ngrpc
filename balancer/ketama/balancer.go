@@ -4,20 +4,22 @@ import (
 	"github.com/smartwalle/hash4go/ketama"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/balancer/base"
+	"hash"
 )
 
 const Name = "grpc4go_balancer_ketama"
 
 // New 创建一致性 Hash 负载均衡器
 // 使用： grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, ketama.Name())),
-func New(key string) balancer.Builder {
-	var b = base.NewBalancerBuilder(Name, &kPickerBuilder{key: key}, base.Config{HealthCheck: true})
+func New(key string, h func() hash.Hash32) balancer.Builder {
+	var b = base.NewBalancerBuilder(Name, &kPickerBuilder{key: key, h: h}, base.Config{HealthCheck: true})
 	balancer.Register(b)
 	return b
 }
 
 type kPickerBuilder struct {
 	key string
+	h   func() hash.Hash32
 }
 
 func (this *kPickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
@@ -27,7 +29,7 @@ func (this *kPickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 
 	var picker = &kPicker{}
 	picker.key = this.key
-	picker.selector = ketama.New(8, nil)
+	picker.selector = ketama.New(8, this.h)
 	for conn, cInfo := range info.ReadySCs {
 		picker.selector.Add(cInfo.Address.Addr, conn, 1)
 	}

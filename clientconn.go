@@ -56,7 +56,6 @@ type ClientPool struct {
 	next     int32
 	mu       sync.Mutex
 	connList []*grpc.ClientConn
-	isInit   bool
 }
 
 func NewClientPool(size int32, fn DialFun) *ClientPool {
@@ -70,15 +69,14 @@ func NewClientPool(size int32, fn DialFun) *ClientPool {
 func (this *ClientPool) Prepare() {
 	this.mu.Lock()
 	defer this.mu.Unlock()
-	if this.isInit == true {
-		return
-	}
-	this.isInit = true
 
 	for idx := range this.connList {
-		conn, _ := this.dial()
-		if conn != nil {
-			this.connList[idx] = conn
+		var conn = this.connList[idx]
+		if conn == nil {
+			nConn, _ := this.dial()
+			if nConn != nil {
+				this.connList[idx] = nConn
+			}
 		}
 	}
 }
@@ -98,8 +96,6 @@ func (this *ClientPool) Get() (*grpc.ClientConn, error) {
 
 	this.mu.Lock()
 	defer this.mu.Unlock()
-
-	this.isInit = true
 
 	conn = this.connList[index]
 	if conn != nil && this.checkState(conn) {
