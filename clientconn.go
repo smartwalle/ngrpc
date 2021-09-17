@@ -51,34 +51,34 @@ func (this *ClientConn) Close() {
 type DialFun func() (*grpc.ClientConn, error)
 
 type ClientPool struct {
-	dial   DialFun
-	size   int32
-	next   int32
-	mu     sync.Mutex
-	conns  []*grpc.ClientConn
-	inited bool
+	dial     DialFun
+	size     int32
+	next     int32
+	mu       sync.Mutex
+	connList []*grpc.ClientConn
+	isInit   bool
 }
 
 func NewClientPool(size int32, fn DialFun) *ClientPool {
 	var p = &ClientPool{}
 	p.dial = fn
 	p.size = size
-	p.conns = make([]*grpc.ClientConn, p.size)
+	p.connList = make([]*grpc.ClientConn, p.size)
 	return p
 }
 
 func (this *ClientPool) Prepare() {
 	this.mu.Lock()
 	defer this.mu.Unlock()
-	if this.inited == true {
+	if this.isInit == true {
 		return
 	}
-	this.inited = true
+	this.isInit = true
 
-	for idx := range this.conns {
+	for idx := range this.connList {
 		conn, _ := this.dial()
 		if conn != nil {
-			this.conns[idx] = conn
+			this.connList[idx] = conn
 		}
 	}
 }
@@ -87,7 +87,7 @@ func (this *ClientPool) Get() (*grpc.ClientConn, error) {
 	var next = atomic.AddInt32(&this.next, 1)
 	var index = next % this.size
 
-	var conn = this.conns[index]
+	var conn = this.connList[index]
 	if conn != nil && this.checkState(conn) {
 		return conn, nil
 	}
@@ -99,9 +99,9 @@ func (this *ClientPool) Get() (*grpc.ClientConn, error) {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
-	this.inited = true
+	this.isInit = true
 
-	conn = this.conns[index]
+	conn = this.connList[index]
 	if conn != nil && this.checkState(conn) {
 		return conn, nil
 	}
@@ -110,7 +110,7 @@ func (this *ClientPool) Get() (*grpc.ClientConn, error) {
 	if err != nil {
 		return nil, err
 	}
-	this.conns[index] = conn
+	this.connList[index] = conn
 	return conn, nil
 }
 
@@ -126,7 +126,7 @@ func (this *ClientPool) checkState(conn *grpc.ClientConn) bool {
 func (this *ClientPool) Close() {
 	this.mu.Lock()
 	defer this.mu.Unlock()
-	for _, conn := range this.conns {
+	for _, conn := range this.connList {
 		if conn == nil {
 			continue
 		}
