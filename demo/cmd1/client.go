@@ -5,7 +5,7 @@ import (
 	"github.com/smartwalle/grpc4go"
 	"github.com/smartwalle/grpc4go/demo"
 	"github.com/smartwalle/grpc4go/demo/proto"
-	"github.com/smartwalle/grpc4go/etcd"
+	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
 	"google.golang.org/grpc"
 	"time"
@@ -21,10 +21,10 @@ func main() {
 	for i := 0; i < 100; i++ {
 		rsp, err := client.Call(context.Background(), &proto.Hello{Name: "Coffee"})
 		if err != nil {
-			log4go.Println(err)
+			log4go.Println(context.Background(), err)
 			return
 		}
-		log4go.Println(i, rsp.Message)
+		log4go.Println(context.Background(), i, rsp.Message)
 
 		time.Sleep(time.Second * 1)
 	}

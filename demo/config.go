@@ -3,7 +3,10 @@ package demo
 import (
 	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/net4go"
+	"github.com/uber/jaeger-client-go/config"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/signal"
@@ -21,7 +24,7 @@ func init() {
 	var err error
 	etcdClient, err = clientv3.New(config)
 	if err != nil {
-		log4go.Println(err)
+		log4go.Println(nil, err)
 		os.Exit(-1)
 	}
 }
@@ -34,7 +37,7 @@ func GetIPAddress() string {
 	var ip, _ = net4go.GetInternalIP()
 	listener, err := net.Listen("tcp", ip+":0")
 	if err != nil {
-		log4go.Println(err)
+		log4go.Println(nil, err)
 		return ""
 	}
 	listener.Close()
@@ -52,4 +55,21 @@ MainLoop:
 			break MainLoop
 		}
 	}
+}
+
+
+type Config struct {
+	config.Configuration
+}
+
+func Load(path string) (cfg *Config) {
+	cfgData, _ := ioutil.ReadFile(path)
+
+	var jCfg config.Configuration
+	yaml.Unmarshal(cfgData, &jCfg)
+
+	cfg = &Config{}
+	cfg.Configuration = jCfg
+
+	return cfg
 }

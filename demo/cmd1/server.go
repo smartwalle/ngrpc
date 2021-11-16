@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/smartwalle/grpc4go/demo"
 	"github.com/smartwalle/grpc4go/demo/proto"
-	"github.com/smartwalle/grpc4go/etcd"
+	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/net4go"
 	"google.golang.org/grpc"
@@ -15,7 +15,7 @@ func main() {
 	var ip, _ = net4go.GetInternalIP()
 	listener, err := net.Listen("tcp", ip+":0")
 	if err != nil {
-		log4go.Println(err)
+		log4go.Println(context.Background(),err)
 		return
 	}
 
@@ -25,10 +25,10 @@ func main() {
 	var s = grpc.NewServer()
 	proto.RegisterHelloWorldServer(s, &demo.HelloService{})
 	go func() {
-		log4go.Println("服务地址:", listener.Addr().String())
+		log4go.Println(context.Background(), "服务地址:", listener.Addr().String())
 		err = s.Serve(listener)
 		if err != nil {
-			log4go.Println("启动服务发生错误:", err)
+			log4go.Println(context.Background(), "启动服务发生错误:", err)
 		}
 	}()
 
@@ -37,6 +37,6 @@ func main() {
 	// 关闭服务
 	s.Stop()
 	// 取消注册服务
-	r.Deregister(context.Background(), "grpc1", "hello", "cmd1")
+	r.Unregister(context.Background(), "grpc1", "hello", "cmd1")
 	r.Close()
 }
