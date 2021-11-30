@@ -15,7 +15,7 @@ func main() {
 	var ip, _ = net4go.GetInternalIP()
 	listener, err := net.Listen("tcp", ip+":0")
 	if err != nil {
-		log4go.Println(context.Background(),err)
+		log4go.Println(context.Background(), err)
 		return
 	}
 

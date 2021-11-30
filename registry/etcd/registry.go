@@ -33,7 +33,8 @@ func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
 }
 
 func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
-	var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
+	//var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
+	var key = this.buildPath(target.Authority, target.Endpoint)
 	var watcher = this.client.Watch(context.Background(), key, this.watch(cc), clientv3.WithPrefix())
 	this.mu.Lock()
 	this.update(cc, watcher.Values())
@@ -85,6 +86,10 @@ func (this *Registry) Unregister(ctx context.Context, domain, service, node stri
 }
 
 func (this *Registry) BuildPath(domain, service, node string) string {
-	var target = this.scheme + "://" + filepath.Join(domain, service, node)
+	return this.buildPath(domain, service, node)
+}
+
+func (this *Registry) buildPath(paths ...string) string {
+	var target = this.scheme + "://" + filepath.Join(paths...) + "/"
 	return target
 }
