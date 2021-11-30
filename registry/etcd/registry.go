@@ -1,6 +1,7 @@
 package etcd
 
 import (
+	"bytes"
 	"context"
 	"github.com/smartwalle/etcd4go"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -90,6 +91,18 @@ func (this *Registry) BuildPath(domain, service, node string) string {
 }
 
 func (this *Registry) buildPath(paths ...string) string {
-	var target = this.scheme + "://" + filepath.Join(paths...) + "/"
-	return target
+	var nPath = filepath.Join(paths...)
+
+	if len(nPath) > 0 && nPath[0] == '/' {
+		nPath = nPath[1:]
+	}
+
+	var buf = bytes.NewBufferString(this.scheme)
+	buf.WriteString("://")
+	buf.WriteString(nPath)
+
+	if len(nPath) > 0 && nPath[len(nPath)-1] != '/' {
+		buf.WriteString("/")
+	}
+	return buf.String()
 }
