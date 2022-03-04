@@ -13,7 +13,7 @@ require (
 	github.com/smartwalle/grpc4go/registry/etcd v0.0.0
 	github.com/smartwalle/jaeger4go v1.0.0 // indirect
 	github.com/smartwalle/log4go v1.0.4
-	github.com/smartwalle/net4go v0.0.44
+	github.com/smartwalle/net4go v0.0.48
 	github.com/smartwalle/net4go/grpc v0.0.0
 	github.com/smartwalle/xid v1.0.6 // indirect
 	github.com/uber/jaeger-client-go v2.16.0+incompatible // indirect
