@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"github.com/smartwalle/grpc4go"
-	"github.com/smartwalle/grpc4go/demo"
-	"github.com/smartwalle/grpc4go/demo/proto"
+	"github.com/smartwalle/grpc4go/examples"
+	"github.com/smartwalle/grpc4go/examples/proto"
 	"github.com/smartwalle/grpc4go/middleware/tracing"
 	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
@@ -12,12 +12,12 @@ import (
 )
 
 func main() {
-	var cfg = demo.Load("./cfg.yaml")
+	var cfg = examples.Load("./cfg.yaml")
 	closer, _ := cfg.InitGlobalTracer("server")
 
 	log4go.SharedLogger().DisablePath()
 
-	var r = etcd.NewRegistry(demo.GetETCDClient())
+	var r = etcd.NewRegistry(examples.GetETCDClient())
 	var s, err = grpc4go.NewServer("grpc2", "hello", xid.NewMID().Hex(),
 		r,
 		grpc4go.WithRegisterTTL(5),
@@ -44,7 +44,7 @@ func main() {
 		return
 	}
 
-	proto.RegisterHelloWorldServer(s, &demo.HelloService{})
+	proto.RegisterHelloWorldServer(s, &examples.HelloService{})
 
 	go func() {
 		log4go.Println(nil, "服务地址:", s.Addr(), s.Name())
@@ -54,7 +54,7 @@ func main() {
 		}
 	}()
 
-	demo.Wait()
+	examples.Wait()
 
 	// 关闭服务
 	s.Stop()

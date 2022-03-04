@@ -1,4 +1,4 @@
-package demo
+package examples
 
 import (
 	"github.com/smartwalle/log4go"
@@ -56,7 +56,6 @@ MainLoop:
 		}
 	}
 }
-
 
 type Config struct {
 	config.Configuration

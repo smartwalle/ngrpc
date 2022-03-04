@@ -7,8 +7,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/smartwalle/grpc4go"
 	"github.com/smartwalle/grpc4go/balancer/ketama"
-	"github.com/smartwalle/grpc4go/demo"
-	"github.com/smartwalle/grpc4go/demo/proto"
+	"github.com/smartwalle/grpc4go/examples"
+	"github.com/smartwalle/grpc4go/examples/proto"
 	"github.com/smartwalle/grpc4go/middleware/tracing"
 	"github.com/smartwalle/grpc4go/middleware/wrapper"
 	"github.com/smartwalle/grpc4go/registry/etcd"
@@ -19,12 +19,12 @@ import (
 )
 
 func main() {
-	var cfg = demo.Load("./cfg.yaml")
+	var cfg = examples.Load("./cfg.yaml")
 	closer, _ := cfg.InitGlobalTracer("client")
 
 	var bb = ketama.New("player_id", nil)
 
-	var r = etcd.NewRegistry(demo.GetETCDClient())
+	var r = etcd.NewRegistry(examples.GetETCDClient())
 
 	log4go.SharedLogger().DisablePath()
 
@@ -91,7 +91,7 @@ func main() {
 	//	_ = conn2
 	//}()
 
-	demo.Wait()
+	examples.Wait()
 
 	r.Close()
 	closer.Close()

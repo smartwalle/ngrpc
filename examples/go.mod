@@ -1,4 +1,4 @@
-module github.com/smartwalle/grpc4go/demo
+module github.com/smartwalle/grpc4go/examples
 
 go 1.12
 

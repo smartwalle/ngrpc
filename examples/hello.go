@@ -1,10 +1,10 @@
-package demo
+package examples
 
 import (
 	"context"
 	"fmt"
 	"github.com/opentracing/opentracing-go"
-	"github.com/smartwalle/grpc4go/demo/proto"
+	"github.com/smartwalle/grpc4go/examples/proto"
 	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/net4go"
 	ngrpc "github.com/smartwalle/net4go/grpc"

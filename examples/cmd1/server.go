@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/smartwalle/grpc4go/demo"
-	"github.com/smartwalle/grpc4go/demo/proto"
+	"github.com/smartwalle/grpc4go/examples"
+	"github.com/smartwalle/grpc4go/examples/proto"
 	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/net4go"
@@ -19,11 +19,11 @@ func main() {
 		return
 	}
 
-	var r = etcd.NewRegistry(demo.GetETCDClient())
+	var r = etcd.NewRegistry(examples.GetETCDClient())
 	r.Register(context.Background(), "grpc1", "hello", "cmd1", listener.Addr().String(), 10)
 
 	var s = grpc.NewServer()
-	proto.RegisterHelloWorldServer(s, &demo.HelloService{})
+	proto.RegisterHelloWorldServer(s, &examples.HelloService{})
 	go func() {
 		log4go.Println(context.Background(), "服务地址:", listener.Addr().String())
 		err = s.Serve(listener)
@@ -32,7 +32,7 @@ func main() {
 		}
 	}()
 
-	demo.Wait()
+	examples.Wait()
 
 	// 关闭服务
 	s.Stop()

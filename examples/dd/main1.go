@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/smartwalle/grpc4go"
-	"github.com/smartwalle/grpc4go/demo"
-	"github.com/smartwalle/grpc4go/demo/proto"
+	"github.com/smartwalle/grpc4go/examples"
+	"github.com/smartwalle/grpc4go/examples/proto"
 	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/xid"
 )
 
 func main() {
-	var r = etcd.NewRegistry(demo.GetETCDClient())
+	var r = etcd.NewRegistry(examples.GetETCDClient())
 	var s, err = grpc4go.NewServer("grpc3", "s1", xid.NewMID().Hex(),
 		r,
 		grpc4go.WithRegisterTTL(5),
@@ -30,7 +30,7 @@ func main() {
 		}
 	}()
 
-	demo.Wait()
+	examples.Wait()
 
 	// 关闭服务
 	s.Stop()
@@ -51,6 +51,6 @@ func (this *Service1) Call(ctx context.Context, in *proto.Hello) (*proto.World, 
 }
 
 func (this *Service1) Stream(s proto.HelloWorld_StreamServer) error {
-return nil
+	return nil
 
 }
