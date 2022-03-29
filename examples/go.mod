@@ -28,7 +28,6 @@ replace (
 	github.com/smartwalle/grpc4go => ../
 	github.com/smartwalle/grpc4go/balancer/ketama => ../balancer/ketama
 	github.com/smartwalle/grpc4go/registry/etcd => ../registry/etcd
-	github.com/smartwalle/log4go => /Users/yang/Desktop/smartwalle/log4go
 	github.com/smartwalle/net4go => /Users/yang/Desktop/smartwalle/net4go
 	github.com/smartwalle/net4go/grpc => /Users/yang/Desktop/smartwalle/net4go/grpc
 )

@@ -26,8 +26,6 @@ func main() {
 
 	var r = etcd.NewRegistry(examples.GetETCDClient())
 
-	log4go.SharedLogger().DisablePath()
-
 	var conn = grpc4go.Dial(r.BuildPath("grpc2", "hello", ""),
 		grpc4go.WithPoolSize(3),
 		grpc.WithBlock(),
@@ -37,13 +35,9 @@ func main() {
 		//timeout.WithUnaryClient(),
 
 		wrapper.WithUnaryClient(wrapper.WithWrapper(func(ctx context.Context, md metadata.MD) (context.Context, metadata.MD) {
-			var logId = log4go.MustGetId(ctx)
-			md.Set("log-id", logId)
 			return ctx, md
 		})),
 		wrapper.WithStreamClient(wrapper.WithWrapper(func(ctx context.Context, md metadata.MD) (context.Context, metadata.MD) {
-			var logId = log4go.MustGetId(ctx)
-			md.Set("log-id", logId)
 			return ctx, md
 		})),
 		tracing.WithUnaryClient(tracing.WithPayload(true), tracing.WithPayloadMarshal(func(m interface{}) interface{} {
@@ -104,7 +98,7 @@ func doStream(client proto.HelloWorldClient) {
 			header.Set("user-id", "1")
 			header.Set("user-id", "2")
 
-			var ctx = log4go.NewContext(context.Background())
+			var ctx = context.Background()
 
 			stream, _ := client.Stream(header.Context(ctx), tracing.WithOperationName(func(ctx context.Context, method string) string {
 				return "wtf"
@@ -138,7 +132,7 @@ func doStream(client proto.HelloWorldClient) {
 func doUnary(client proto.HelloWorldClient, id string) {
 	var i = 0
 	for {
-		var ctx = log4go.NewContext(context.Background())
+		var ctx = context.Background()
 
 		span, ctx := opentracing.StartSpanFromContext(ctx, "s1-call")
 		span.LogKV("s1-call-key", "s1-call-value")
