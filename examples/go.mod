@@ -1,13 +1,13 @@
-module github.com/smartwalle/grpc4go/examples
+module github.com/smartwalle/ngrpc/examples
 
 go 1.12
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/smartwalle/grpc4go v0.0.0
-	github.com/smartwalle/grpc4go/balancer/ketama v0.0.0
-	github.com/smartwalle/grpc4go/registry/etcd v0.0.0
+	github.com/smartwalle/ngrpc v0.0.0
+	github.com/smartwalle/ngrpc/balancer/ketama v0.0.0
+	github.com/smartwalle/ngrpc/registry/etcd v0.0.0
 	github.com/smartwalle/log4go v1.0.4
 	github.com/smartwalle/net4go v0.0.50
 	github.com/smartwalle/net4go/grpc v0.0.10
@@ -21,7 +21,7 @@ require (
 )
 
 replace (
-	github.com/smartwalle/grpc4go => ../
-	github.com/smartwalle/grpc4go/balancer/ketama => ../balancer/ketama
-	github.com/smartwalle/grpc4go/registry/etcd => ../registry/etcd
+	github.com/smartwalle/ngrpc => ../
+	github.com/smartwalle/ngrpc/balancer/ketama => ../balancer/ketama
+	github.com/smartwalle/ngrpc/registry/etcd => ../registry/etcd
 )

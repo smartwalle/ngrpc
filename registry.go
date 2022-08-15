@@ -1,4 +1,4 @@
-package grpc4go
+package ngrpc
 
 import "context"
 

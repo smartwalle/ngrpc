@@ -7,7 +7,7 @@ import (
 	"hash"
 )
 
-const Name = "grpc4go_balancer_ketama"
+const Name = "ngrpc_balancer_ketama"
 
 // New 创建一致性 Hash 负载均衡器
 // 使用： grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, ketama.Name())),

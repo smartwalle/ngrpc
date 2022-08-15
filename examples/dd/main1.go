@@ -3,19 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/smartwalle/grpc4go"
-	"github.com/smartwalle/grpc4go/examples"
-	"github.com/smartwalle/grpc4go/examples/proto"
-	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
+	"github.com/smartwalle/ngrpc"
+	"github.com/smartwalle/ngrpc/examples"
+	"github.com/smartwalle/ngrpc/examples/proto"
+	"github.com/smartwalle/ngrpc/registry/etcd"
 	"github.com/smartwalle/xid"
 )
 
 func main() {
 	var r = etcd.NewRegistry(examples.GetETCDClient())
-	var s, err = grpc4go.NewServer("grpc3", "s1", xid.NewMID().Hex(),
+	var s, err = ngrpc.NewServer("grpc3", "s1", xid.NewMID().Hex(),
 		r,
-		grpc4go.WithRegisterTTL(5),
+		ngrpc.WithRegisterTTL(5),
 	)
 	if err != nil {
 		return

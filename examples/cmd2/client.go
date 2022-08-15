@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/opentracing/opentracing-go"
-	"github.com/smartwalle/grpc4go"
-	"github.com/smartwalle/grpc4go/balancer/ketama"
-	"github.com/smartwalle/grpc4go/examples"
-	"github.com/smartwalle/grpc4go/examples/proto"
-	"github.com/smartwalle/grpc4go/middleware/tracing"
-	"github.com/smartwalle/grpc4go/middleware/wrapper"
-	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
+	"github.com/smartwalle/ngrpc"
+	"github.com/smartwalle/ngrpc/balancer/ketama"
+	"github.com/smartwalle/ngrpc/examples"
+	"github.com/smartwalle/ngrpc/examples/proto"
+	"github.com/smartwalle/ngrpc/middleware/tracing"
+	"github.com/smartwalle/ngrpc/middleware/wrapper"
+	"github.com/smartwalle/ngrpc/registry/etcd"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"time"
@@ -26,12 +26,12 @@ func main() {
 
 	var r = etcd.NewRegistry(examples.GetETCDClient())
 
-	var conn = grpc4go.Dial(r.BuildPath("grpc2", "hello", ""),
-		grpc4go.WithPoolSize(3),
+	var conn = ngrpc.Dial(r.BuildPath("grpc2", "hello", ""),
+		ngrpc.WithPoolSize(3),
 		grpc.WithBlock(),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, bb.Name())),
 		grpc.WithInsecure(),
-		//grpc4go.WithTimeout(time.Second*3),
+		//ngrpc.WithTimeout(time.Second*3),
 		//timeout.WithUnaryClient(),
 
 		wrapper.WithUnaryClient(wrapper.WithWrapper(func(ctx context.Context, md metadata.MD) (context.Context, metadata.MD) {
@@ -94,7 +94,7 @@ func main() {
 func doStream(client proto.HelloWorldClient) {
 	for i := 0; i < 10; i++ {
 		go func(i int) {
-			var header = grpc4go.NewHeader()
+			var header = ngrpc.NewHeader()
 			header.Set("user-id", "1")
 			header.Set("user-id", "2")
 
@@ -138,7 +138,7 @@ func doUnary(client proto.HelloWorldClient, id string) {
 		span.LogKV("s1-call-key", "s1-call-value")
 		span.Finish()
 
-		var header = grpc4go.NewHeader()
+		var header = ngrpc.NewHeader()
 		header.Set("user-id", "1")
 		header.Set("user-id", "2")
 

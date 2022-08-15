@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/smartwalle/grpc4go"
-	"github.com/smartwalle/grpc4go/examples"
-	"github.com/smartwalle/grpc4go/examples/proto"
-	"github.com/smartwalle/grpc4go/middleware/tracing"
-	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
+	"github.com/smartwalle/ngrpc"
+	"github.com/smartwalle/ngrpc/examples"
+	"github.com/smartwalle/ngrpc/examples/proto"
+	"github.com/smartwalle/ngrpc/middleware/tracing"
+	"github.com/smartwalle/ngrpc/registry/etcd"
 	"github.com/smartwalle/xid"
 )
 
@@ -18,9 +18,9 @@ func main() {
 	log4go.SharedLogger().DisablePath()
 
 	var r = etcd.NewRegistry(examples.GetETCDClient())
-	var s, err = grpc4go.NewServer("grpc2", "hello", xid.NewMID().Hex(),
+	var s, err = ngrpc.NewServer("grpc2", "hello", xid.NewMID().Hex(),
 		r,
-		grpc4go.WithRegisterTTL(5),
+		ngrpc.WithRegisterTTL(5),
 		//wrapper.WithUnaryServer(wrapper.WithWrapper(func(ctx context.Context, md metadata.MD) (context.Context, metadata.MD) {
 		//	var logId = md.Get("log-id")[0]
 		//	return log4go.ContextWithId(ctx, logId), md

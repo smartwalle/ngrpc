@@ -1,4 +1,4 @@
-module github.com/smartwalle/grpc4go/registry/etcd
+module github.com/smartwalle/ngrpc/registry/etcd
 
 go 1.12
 

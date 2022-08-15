@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/smartwalle/grpc4go/examples"
-	"github.com/smartwalle/grpc4go/examples/proto"
-	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/net4go"
+	"github.com/smartwalle/ngrpc/examples"
+	"github.com/smartwalle/ngrpc/examples/proto"
+	"github.com/smartwalle/ngrpc/registry/etcd"
 	"google.golang.org/grpc"
 	"net"
 )

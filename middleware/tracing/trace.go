@@ -6,13 +6,13 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/smartwalle/grpc4go"
+	"github.com/smartwalle/ngrpc"
 	"google.golang.org/grpc/metadata"
 	"io"
 )
 
 func clientSpanFromContext(ctx context.Context, tracer opentracing.Tracer, opName string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
-	var header = grpc4go.HeaderFromOutgoing(ctx)
+	var header = ngrpc.HeaderFromOutgoing(ctx)
 
 	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
 		opts = append(opts, opentracing.ChildOf(parentSpan.Context()))
@@ -31,7 +31,7 @@ func clientSpanFromContext(ctx context.Context, tracer opentracing.Tracer, opNam
 }
 
 func serverSpanFromContext(ctx context.Context, tracer opentracing.Tracer, opName string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span, error) {
-	var header = grpc4go.HeaderFromIncoming(ctx)
+	var header = ngrpc.HeaderFromIncoming(ctx)
 
 	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
 		opts = append(opts, opentracing.ChildOf(parentSpan.Context()))

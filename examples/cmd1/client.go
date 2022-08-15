@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/smartwalle/grpc4go"
-	"github.com/smartwalle/grpc4go/examples"
-	"github.com/smartwalle/grpc4go/examples/proto"
-	"github.com/smartwalle/grpc4go/registry/etcd"
 	"github.com/smartwalle/log4go"
+	"github.com/smartwalle/ngrpc"
+	"github.com/smartwalle/ngrpc/examples"
+	"github.com/smartwalle/ngrpc/examples/proto"
+	"github.com/smartwalle/ngrpc/registry/etcd"
 	"google.golang.org/grpc"
 	"time"
 )
@@ -14,7 +14,7 @@ import (
 func main() {
 	var r = etcd.NewRegistry(examples.GetETCDClient())
 
-	var conn = grpc4go.Dial(r.BuildPath("grpc1", "hello", "cmd1"), grpc.WithInsecure(), grpc4go.WithTimeout(time.Second*3))
+	var conn = ngrpc.Dial(r.BuildPath("grpc1", "hello", "cmd1"), grpc.WithInsecure(), ngrpc.WithTimeout(time.Second*3))
 
 	var client = proto.NewHelloWorldClient(conn)
 

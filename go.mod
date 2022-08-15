@@ -1,4 +1,4 @@
-module github.com/smartwalle/grpc4go
+module github.com/smartwalle/ngrpc
 
 go 1.16
 
