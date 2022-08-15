@@ -6,13 +6,13 @@ import (
 )
 
 func Dial(target string, opts ...grpc.DialOption) *ClientConn {
-	var defaultOption = &dialOptions{
+	var defaultOptions = &dialOptions{
 		poolSize: 1,
 		timeout:  0,
 	}
 
 	var grpcOpts, dialOpts = filterDialOptions(opts)
-	var nDialOpts = mergeDialOptions(defaultOption, dialOpts)
+	var nDialOpts = mergeDialOptions(defaultOptions, dialOpts)
 
 	var client = &ClientConn{}
 	client.retry = nDialOpts.poolSize
