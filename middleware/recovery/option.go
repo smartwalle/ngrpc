@@ -7,26 +7,26 @@ import (
 type Handler func(ctx context.Context, r interface{}) error
 
 type Option struct {
-	apply func(*option)
+	apply func(*options)
 }
 
-type option struct {
+type options struct {
 	handler Handler
 }
 
 // WithHandler 设置用于处理 panic 信息的回调函数
 func WithHandler(h Handler) Option {
-	return Option{apply: func(opt *option) {
-		opt.handler = h
+	return Option{apply: func(opts *options) {
+		opts.handler = h
 	}}
 }
 
-func mergeOptions(opt *option, callOptions []Option) *option {
+func mergeOptions(dOpts *options, callOptions []Option) *options {
 	if len(callOptions) == 0 {
-		return opt
+		return dOpts
 	}
-	var nOpt = &option{}
-	*nOpt = *opt
+	var nOpt = &options{}
+	*nOpt = *dOpts
 	for _, f := range callOptions {
 		f.apply(nOpt)
 	}

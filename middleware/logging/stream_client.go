@@ -7,18 +7,18 @@ import (
 
 // WithStreamClient 客户端流操作日志处理
 func WithStreamClient(opts ...Option) grpc.DialOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		logger:  &nilLogger{},
 		payload: true,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithChainStreamInterceptor(streamClientLog(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.WithChainStreamInterceptor(streamClientLog(defaultOptions))
 }
 
-func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
+func streamClientLog(defaultOptions *options) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		var grpcOpts, nOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, nOpts)
+		var opt = mergeOptions(defaultOptions, nOpts)
 
 		opt.logger.Printf(ctx, "GRPC 请求建立流: [%s - %s] \n", cc.Target(), method)
 
@@ -35,7 +35,7 @@ func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
 
 		var nStream = &clientStream{
 			ClientStream: stream,
-			opt:          opt,
+			opts:         opt,
 		}
 		return nStream, err
 	}
@@ -43,16 +43,16 @@ func streamClientLog(defaultOption *option) grpc.StreamClientInterceptor {
 
 type clientStream struct {
 	grpc.ClientStream
-	opt *option
+	opts *options
 }
 
 func (this *clientStream) SendMsg(m interface{}) error {
 	var err = this.ClientStream.SendMsg(m)
-	if this.opt.payload {
+	if this.opts.payload {
 		if err != nil {
-			this.opt.logger.Printf(this.Context(), "GRPC 流发送消息失败: [%v], 错误信息: [%v] \n", m, err)
+			this.opts.logger.Printf(this.Context(), "GRPC 流发送消息失败: [%v], 错误信息: [%v] \n", m, err)
 		} else {
-			this.opt.logger.Printf(this.Context(), "GRPC 流发送消息成功: [%v] \n", m)
+			this.opts.logger.Printf(this.Context(), "GRPC 流发送消息成功: [%v] \n", m)
 		}
 	}
 	return err
@@ -60,11 +60,11 @@ func (this *clientStream) SendMsg(m interface{}) error {
 
 func (this *clientStream) RecvMsg(m interface{}) error {
 	var err = this.ClientStream.RecvMsg(m)
-	if this.opt.payload {
+	if this.opts.payload {
 		if err != nil {
-			this.opt.logger.Printf(this.Context(), "GRPC 流接收消息失败: [%v] \n", err)
+			this.opts.logger.Printf(this.Context(), "GRPC 流接收消息失败: [%v] \n", err)
 		} else {
-			this.opt.logger.Printf(this.Context(), "GRPC 流接收消息成功: [%v] \n", m)
+			this.opts.logger.Printf(this.Context(), "GRPC 流接收消息成功: [%v] \n", m)
 		}
 	}
 	return err

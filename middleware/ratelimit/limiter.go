@@ -9,9 +9,9 @@ type Limiter interface {
 	Allow() bool
 }
 
-func errorFrom(opt *option, method string) error {
-	if opt.handler != nil {
-		return opt.handler(method)
+func errorFrom(opts *options, method string) error {
+	if opts.handler != nil {
+		return opts.handler(method)
 	}
 	return status.Errorf(codes.ResourceExhausted, "%s is rejected by rate limit middleware", method)
 }

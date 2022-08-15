@@ -10,7 +10,7 @@ import (
 
 // WithUnaryClient 客户端普通方法调用重试处理
 func WithUnaryClient(opts ...Option) grpc.DialOption {
-	var defaultOption = &option{
+	var defaultOptions = &option{
 		max:         1,
 		callTimeout: 5 * time.Second,
 		codes:       []codes.Code{codes.ResourceExhausted, codes.Unavailable},
@@ -18,14 +18,14 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 			return time.Second * 1
 		},
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithChainUnaryInterceptor(unaryClientRetry(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.WithChainUnaryInterceptor(unaryClientRetry(defaultOptions))
 }
 
-func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
+func unaryClientRetry(defaultOptions *option) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, nOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, nOpts)
+		var opt = mergeOptions(defaultOptions, nOpts)
 
 		var err error
 
@@ -59,10 +59,10 @@ func unaryClientRetry(defaultOption *option) grpc.UnaryClientInterceptor {
 	}
 }
 
-func retryBackoff(i int, ctx context.Context, opt *option) error {
+func retryBackoff(i int, ctx context.Context, opts *option) error {
 	var waitTime time.Duration = 0
-	if i > 0 && opt.backoff != nil {
-		waitTime = opt.backoff(ctx, i)
+	if i > 0 && opts.backoff != nil {
+		waitTime = opts.backoff(ctx, i)
 	}
 	if waitTime > 0 {
 		var timer = time.NewTimer(waitTime)
@@ -76,10 +76,10 @@ func retryBackoff(i int, ctx context.Context, opt *option) error {
 	return nil
 }
 
-func callContext(ctx context.Context, opt *option) context.Context {
+func callContext(ctx context.Context, opts *option) context.Context {
 	var nCtx = ctx
-	if opt.callTimeout > 0 {
-		nCtx, _ = context.WithTimeout(nCtx, opt.callTimeout)
+	if opts.callTimeout > 0 {
+		nCtx, _ = context.WithTimeout(nCtx, opts.callTimeout)
 	}
 	return nCtx
 }

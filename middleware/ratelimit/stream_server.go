@@ -6,17 +6,17 @@ import (
 
 // WithStreamServer 服务端建立流限流
 func WithStreamServer(limiter Limiter, opts ...Option) grpc.ServerOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		limiter: limiter,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainStreamInterceptor(streamServerLimit(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.ChainStreamInterceptor(streamServerLimit(defaultOptions))
 }
 
-func streamServerLimit(opt *option) grpc.StreamServerInterceptor {
+func streamServerLimit(opts *options) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if opt.limiter != nil && opt.limiter.Allow() == false {
-			return errorFrom(opt, info.FullMethod)
+		if opts.limiter != nil && opts.limiter.Allow() == false {
+			return errorFrom(opts, info.FullMethod)
 		}
 		return handler(srv, ss)
 	}

@@ -6,16 +6,16 @@ import (
 )
 
 func WithStreamServer(opts ...Option) grpc.ServerOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		handler: defaultWrapper,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainStreamInterceptor(streamServerWrapper(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.ChainStreamInterceptor(streamServerWrapper(defaultOptions))
 }
 
-func streamServerWrapper(opt *option) grpc.StreamServerInterceptor {
+func streamServerWrapper(opts *options) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		var nCtx = incoming(ss.Context(), opt)
+		var nCtx = incoming(ss.Context(), opts)
 		var nStream = &serverStream{
 			ServerStream: ss,
 			ctx:          nCtx,

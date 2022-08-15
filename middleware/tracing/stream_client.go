@@ -11,19 +11,19 @@ import (
 
 // WithStreamClient 客户端流操作追踪
 func WithStreamClient(opts ...Option) grpc.DialOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		tracer:         opentracing.GlobalTracer(),
 		payloadMarshal: defaultPayloadMarshal,
 		opName:         defaultOperationName,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithChainStreamInterceptor(streamClientTracing(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.WithChainStreamInterceptor(streamClientTracing(defaultOptions))
 }
 
-func streamClientTracing(defaultOption *option) grpc.StreamClientInterceptor {
+func streamClientTracing(defaultOptions *options) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		var grpcOpts, nOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, nOpts)
+		var opt = mergeOptions(defaultOptions, nOpts)
 		if opt.disable {
 			return streamer(ctx, desc, cc, method, grpcOpts...)
 		}
@@ -69,7 +69,7 @@ type clientStream struct {
 	grpc.ClientStream
 	mu       sync.Mutex
 	finished bool
-	opt      *option
+	opt      *options
 	opName   string
 	pCtx     context.Context
 }

@@ -54,16 +54,16 @@ func WithBackoff(f Backoff) Option {
 	}}
 }
 
-func mergeOptions(opt *option, callOptions []Option) *option {
-	if len(callOptions) == 0 {
-		return opt
+func mergeOptions(dOpts *option, opts []Option) *option {
+	if len(opts) == 0 {
+		return dOpts
 	}
-	var nOpt = &option{}
-	*nOpt = *opt
-	for _, f := range callOptions {
-		f.apply(nOpt)
+	var nOpts = &option{}
+	*nOpts = *dOpts
+	for _, f := range opts {
+		f.apply(nOpts)
 	}
-	return nOpt
+	return nOpts
 }
 
 func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, nOptions []Option) {

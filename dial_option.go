@@ -7,23 +7,23 @@ import (
 
 type DialOption struct {
 	grpc.EmptyDialOption
-	apply func(*dialOption)
+	apply func(*dialOptions)
 }
 
-type dialOption struct {
+type dialOptions struct {
 	poolSize int32
 	timeout  time.Duration
 }
 
 func WithPoolSize(size int32) DialOption {
-	return DialOption{apply: func(opt *dialOption) {
-		opt.poolSize = size
+	return DialOption{apply: func(opts *dialOptions) {
+		opts.poolSize = size
 	}}
 }
 
 func WithTimeout(timeout time.Duration) DialOption {
-	return DialOption{apply: func(opt *dialOption) {
-		opt.timeout = timeout
+	return DialOption{apply: func(opts *dialOptions) {
+		opts.timeout = timeout
 	}}
 }
 
@@ -38,14 +38,14 @@ func filterDialOptions(inOpts []grpc.DialOption) (grpcOptions []grpc.DialOption,
 	return grpcOptions, dialOptions
 }
 
-func mergeDialOptions(dialOpt *dialOption, dialOptions []DialOption) *dialOption {
-	if len(dialOptions) == 0 {
-		return dialOpt
+func mergeDialOptions(dOpts *dialOptions, opts []DialOption) *dialOptions {
+	if len(opts) == 0 {
+		return dOpts
 	}
-	var nOpt = &dialOption{}
-	*nOpt = *dialOpt
-	for _, f := range dialOptions {
-		f.apply(nOpt)
+	var nOpts = &dialOptions{}
+	*nOpts = *dOpts
+	for _, f := range opts {
+		f.apply(nOpts)
 	}
-	return nOpt
+	return nOpts
 }

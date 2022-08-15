@@ -6,17 +6,17 @@ import (
 )
 
 func WithUnaryClient(opts ...Option) grpc.DialOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		handler: defaultWrapper,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithChainUnaryInterceptor(unaryClientWrapper(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.WithChainUnaryInterceptor(unaryClientWrapper(defaultOptions))
 }
 
-func unaryClientWrapper(defaultOption *option) grpc.UnaryClientInterceptor {
+func unaryClientWrapper(defaultOptions *options) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, nOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, nOpts)
+		var opt = mergeOptions(defaultOptions, nOpts)
 		ctx = outgoing(ctx, opt)
 		return invoker(ctx, method, req, reply, cc, grpcOpts...)
 	}

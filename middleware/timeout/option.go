@@ -7,10 +7,10 @@ import (
 
 type Option struct {
 	grpc.EmptyCallOption
-	apply func(*option)
+	apply func(*options)
 }
 
-type option struct {
+type options struct {
 	timeout time.Duration
 }
 
@@ -21,21 +21,21 @@ func Disable() Option {
 
 // WithValue 设置超时时间
 func WithValue(timeout time.Duration) Option {
-	return Option{apply: func(opt *option) {
-		opt.timeout = timeout
+	return Option{apply: func(opts *options) {
+		opts.timeout = timeout
 	}}
 }
 
-func mergeOptions(opt *option, callOptions []Option) *option {
-	if len(callOptions) == 0 {
-		return opt
+func mergeOptions(dOpts *options, opts []Option) *options {
+	if len(opts) == 0 {
+		return dOpts
 	}
-	var nOpt = &option{}
-	*nOpt = *opt
-	for _, f := range callOptions {
-		f.apply(nOpt)
+	var nOpts = &options{}
+	*nOpts = *dOpts
+	for _, f := range opts {
+		f.apply(nOpts)
 	}
-	return nOpt
+	return nOpts
 }
 
 func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, nOptions []Option) {

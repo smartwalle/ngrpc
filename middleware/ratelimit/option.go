@@ -8,10 +8,10 @@ type Handler func(method string) error
 
 type Option struct {
 	grpc.EmptyCallOption
-	apply func(*option)
+	apply func(*options)
 }
 
-type option struct {
+type options struct {
 	limiter Limiter
 	handler Handler
 }
@@ -22,18 +22,18 @@ func WithError(h Handler) Option {
 		return Option{}
 	}
 	return Option{
-		apply: func(opt *option) {
-			opt.handler = h
+		apply: func(opts *options) {
+			opts.handler = h
 		},
 	}
 }
 
-func mergeOptions(opt *option, callOptions []Option) *option {
+func mergeOptions(opts *options, callOptions []Option) *options {
 	if len(callOptions) == 0 {
-		return opt
+		return opts
 	}
-	var nOpt = &option{}
-	*nOpt = *opt
+	var nOpt = &options{}
+	*nOpt = *opts
 	for _, f := range callOptions {
 		if f.apply == nil {
 			continue

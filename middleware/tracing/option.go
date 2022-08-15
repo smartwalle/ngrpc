@@ -11,10 +11,10 @@ type OperationName func(ctx context.Context, method string) string
 
 type Option struct {
 	grpc.EmptyCallOption
-	apply func(*option)
+	apply func(*options)
 }
 
-type option struct {
+type options struct {
 	tracer         opentracing.Tracer
 	payload        bool
 	streamPayload  bool
@@ -26,8 +26,8 @@ type option struct {
 // Disable 禁用追踪
 func Disable() Option {
 	return Option{
-		apply: func(opt *option) {
-			opt.disable = true
+		apply: func(opts *options) {
+			opts.disable = true
 		},
 	}
 }
@@ -35,8 +35,8 @@ func Disable() Option {
 // Enable 启用追踪
 func Enable() Option {
 	return Option{
-		apply: func(opt *option) {
-			opt.disable = false
+		apply: func(opts *options) {
+			opts.disable = false
 		},
 	}
 }
@@ -44,8 +44,8 @@ func Enable() Option {
 // WithTracer 设置追踪组件
 func WithTracer(tracer opentracing.Tracer) Option {
 	return Option{
-		apply: func(opt *option) {
-			opt.tracer = tracer
+		apply: func(opts *options) {
+			opts.tracer = tracer
 		},
 	}
 }
@@ -53,8 +53,8 @@ func WithTracer(tracer opentracing.Tracer) Option {
 // WithPayload 对于普通方法，用于设置是否需要记录请求头、请求参数及响应数据信息；对于流，用于设置建立流时是否需要记录请求头信息；
 func WithPayload(payload bool) Option {
 	return Option{
-		apply: func(opt *option) {
-			opt.payload = payload
+		apply: func(opts *options) {
+			opts.payload = payload
 		},
 	}
 }
@@ -65,8 +65,8 @@ func WithPayloadMarshal(h PayloadMarshal) Option {
 		h = defaultPayloadMarshal
 	}
 	return Option{
-		apply: func(opt *option) {
-			opt.payloadMarshal = h
+		apply: func(opts *options) {
+			opts.payloadMarshal = h
 		},
 	}
 }
@@ -74,8 +74,8 @@ func WithPayloadMarshal(h PayloadMarshal) Option {
 // WithStreamPayload 设置是否需要记录流的发送和接收数据信息，只作用于流操作
 func WithStreamPayload(payload bool) Option {
 	return Option{
-		apply: func(opt *option) {
-			opt.streamPayload = payload
+		apply: func(opts *options) {
+			opts.streamPayload = payload
 		},
 	}
 }
@@ -86,8 +86,8 @@ func WithOperationName(h OperationName) Option {
 		h = defaultOperationName
 	}
 	return Option{
-		apply: func(opt *option) {
-			opt.opName = h
+		apply: func(opts *options) {
+			opts.opName = h
 		},
 	}
 }
@@ -100,16 +100,16 @@ func defaultOperationName(ctx context.Context, method string) string {
 	return method
 }
 
-func mergeOptions(opt *option, callOptions []Option) *option {
-	if len(callOptions) == 0 {
-		return opt
+func mergeOptions(dOpts *options, opts []Option) *options {
+	if len(opts) == 0 {
+		return dOpts
 	}
-	var nOpt = &option{}
-	*nOpt = *opt
-	for _, f := range callOptions {
-		f.apply(nOpt)
+	var nOpts = &options{}
+	*nOpts = *dOpts
+	for _, f := range opts {
+		f.apply(nOpts)
 	}
-	return nOpt
+	return nOpts
 }
 
 func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, nOptions []Option) {

@@ -7,17 +7,17 @@ import (
 
 // WithUnaryServer 服务端普通方法访问限流
 func WithUnaryServer(limiter Limiter, opts ...Option) grpc.ServerOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		limiter: limiter,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainUnaryInterceptor(unaryServerLimit(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.ChainUnaryInterceptor(unaryServerLimit(defaultOptions))
 }
 
-func unaryServerLimit(opt *option) grpc.UnaryServerInterceptor {
+func unaryServerLimit(opts *options) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if opt.limiter != nil && opt.limiter.Allow() == false {
-			return nil, errorFrom(opt, info.FullMethod)
+		if opts.limiter != nil && opts.limiter.Allow() == false {
+			return nil, errorFrom(opts, info.FullMethod)
 		}
 		return handler(ctx, req)
 	}

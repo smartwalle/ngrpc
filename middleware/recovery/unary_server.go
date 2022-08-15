@@ -9,16 +9,16 @@ import (
 
 // WithUnaryServer 服务端捕获普通方法调用异常
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
-	var defaultOption = &option{}
+	var defaultOption = &options{}
 	defaultOption = mergeOptions(defaultOption, opts)
 	return grpc.ChainUnaryInterceptor(unaryServerRecovery(defaultOption))
 }
 
-func unaryServerRecovery(opt *option) grpc.UnaryServerInterceptor {
+func unaryServerRecovery(opts *options) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = errorFrom(ctx, opt, r)
+				err = errorFrom(ctx, opts, r)
 			}
 		}()
 		resp, err = handler(ctx, req)
@@ -26,9 +26,9 @@ func unaryServerRecovery(opt *option) grpc.UnaryServerInterceptor {
 	}
 }
 
-func errorFrom(ctx context.Context, opt *option, r interface{}) error {
-	if opt.handler != nil {
-		return opt.handler(ctx, r)
+func errorFrom(ctx context.Context, opts *options, r interface{}) error {
+	if opts.handler != nil {
+		return opts.handler(ctx, r)
 	}
 	return status.Errorf(codes.Internal, "%v", r)
 }

@@ -10,39 +10,39 @@ import (
 
 // WithUnaryServer 服务端普通方法响应追踪
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		tracer:         opentracing.GlobalTracer(),
 		payloadMarshal: defaultPayloadMarshal,
 		opName:         defaultOperationName,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainUnaryInterceptor(unaryServerTracing(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.ChainUnaryInterceptor(unaryServerTracing(defaultOptions))
 }
 
-func unaryServerTracing(opt *option) grpc.UnaryServerInterceptor {
+func unaryServerTracing(opts *options) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if opt.disable {
+		if opts.disable {
 			return handler(ctx, req)
 		}
-		var opName = opt.opName(ctx, info.FullMethod)
+		var opName = opts.opName(ctx, info.FullMethod)
 
-		var nCtx, nSpan, err = serverSpanFromContext(ctx, opt.tracer, fmt.Sprintf("[GRPC Server] %s", opName))
+		var nCtx, nSpan, err = serverSpanFromContext(ctx, opts.tracer, fmt.Sprintf("[GRPC Server] %s", opName))
 		if err != nil {
 			return nil, err
 		}
 
-		if opt.payload {
+		if opts.payload {
 			var md, _ = metadata.FromIncomingContext(ctx)
 			traceHeader(nSpan, md)
 
-			nSpan.LogKV("Req", opt.payloadMarshal(req))
+			nSpan.LogKV("Req", opts.payloadMarshal(req))
 		}
 
 		resp, err := handler(nCtx, req)
 
-		if opt.payload {
+		if opts.payload {
 			if err == nil && resp != nil {
-				nSpan.LogKV("Resp", opt.payloadMarshal(resp))
+				nSpan.LogKV("Resp", opts.payloadMarshal(resp))
 			}
 		}
 

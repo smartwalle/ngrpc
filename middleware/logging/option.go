@@ -6,10 +6,10 @@ import (
 
 type Option struct {
 	grpc.EmptyCallOption
-	apply func(*option)
+	apply func(*options)
 }
 
-type option struct {
+type options struct {
 	logger  Logger
 	payload bool
 }
@@ -25,8 +25,8 @@ func WithLogger(logger Logger) Option {
 		logger = &nilLogger{}
 	}
 	return Option{
-		apply: func(opt *option) {
-			opt.logger = logger
+		apply: func(opts *options) {
+			opts.logger = logger
 		},
 	}
 }
@@ -34,18 +34,18 @@ func WithLogger(logger Logger) Option {
 // WithPayload 设置是否需要记录请求参数及响应数据信息
 func WithPayload(payload bool) Option {
 	return Option{
-		apply: func(opt *option) {
-			opt.payload = payload
+		apply: func(opts *options) {
+			opts.payload = payload
 		},
 	}
 }
 
-func mergeOptions(opt *option, callOptions []Option) *option {
+func mergeOptions(dOpts *options, callOptions []Option) *options {
 	if len(callOptions) == 0 {
-		return opt
+		return dOpts
 	}
-	var nOpt = &option{}
-	*nOpt = *opt
+	var nOpt = &options{}
+	*nOpt = *dOpts
 	for _, f := range callOptions {
 		f.apply(nOpt)
 	}

@@ -10,17 +10,17 @@ type Handler func(ctx context.Context, md metadata.MD) (context.Context, metadat
 
 type Option struct {
 	grpc.EmptyCallOption
-	apply func(*option)
+	apply func(*options)
 }
 
-type option struct {
+type options struct {
 	handler Handler
 }
 
 func WithWrapper(h Handler) Option {
 	return Option{
-		apply: func(opt *option) {
-			opt.handler = h
+		apply: func(opts *options) {
+			opts.handler = h
 		},
 	}
 }
@@ -29,16 +29,16 @@ func defaultWrapper(ctx context.Context, md metadata.MD) (context.Context, metad
 	return ctx, md
 }
 
-func mergeOptions(opt *option, callOptions []Option) *option {
-	if len(callOptions) == 0 {
-		return opt
+func mergeOptions(dOpts *options, opts []Option) *options {
+	if len(opts) == 0 {
+		return dOpts
 	}
-	var nOpt = &option{}
-	*nOpt = *opt
-	for _, f := range callOptions {
-		f.apply(nOpt)
+	var nOpts = &options{}
+	*nOpts = *dOpts
+	for _, f := range opts {
+		f.apply(nOpts)
 	}
-	return nOpt
+	return nOpts
 }
 
 func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, nOptions []Option) {
@@ -52,25 +52,25 @@ func filterOptions(inOpts []grpc.CallOption) (grpcOptions []grpc.CallOption, nOp
 	return grpcOptions, nOptions
 }
 
-func outgoing(ctx context.Context, opt *option) context.Context {
-	if opt.handler != nil {
+func outgoing(ctx context.Context, opts *options) context.Context {
+	if opts.handler != nil {
 		var md, _ = metadata.FromOutgoingContext(ctx)
 		if md == nil {
 			md = metadata.MD{}
 		}
-		ctx, md = opt.handler(ctx, md)
+		ctx, md = opts.handler(ctx, md)
 		ctx = metadata.NewOutgoingContext(ctx, md)
 	}
 	return ctx
 }
 
-func incoming(ctx context.Context, opt *option) context.Context {
-	if opt.handler != nil {
+func incoming(ctx context.Context, opts *options) context.Context {
+	if opts.handler != nil {
 		var md, _ = metadata.FromIncomingContext(ctx)
 		if md == nil {
 			md = metadata.MD{}
 		}
-		ctx, md = opt.handler(ctx, md)
+		ctx, md = opts.handler(ctx, md)
 		ctx = metadata.NewIncomingContext(ctx, md)
 	}
 	return ctx

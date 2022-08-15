@@ -10,19 +10,19 @@ import (
 
 // WithUnaryClient 客户端普通方法调用追踪
 func WithUnaryClient(opts ...Option) grpc.DialOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		tracer:         opentracing.GlobalTracer(),
 		payloadMarshal: defaultPayloadMarshal,
 		opName:         defaultOperationName,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithChainUnaryInterceptor(unaryClientTracing(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.WithChainUnaryInterceptor(unaryClientTracing(defaultOptions))
 }
 
-func unaryClientTracing(defaultOption *option) grpc.UnaryClientInterceptor {
+func unaryClientTracing(defaultOptions *options) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, nOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, nOpts)
+		var opt = mergeOptions(defaultOptions, nOpts)
 		if opt.disable {
 			return invoker(ctx, method, req, reply, cc, grpcOpts...)
 		}

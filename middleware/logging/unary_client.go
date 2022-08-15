@@ -7,18 +7,18 @@ import (
 
 // WithUnaryClient 客户端普通方法调用日志处理
 func WithUnaryClient(opts ...Option) grpc.DialOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		logger:  &nilLogger{},
 		payload: true,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithChainUnaryInterceptor(unaryClientLog(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.WithChainUnaryInterceptor(unaryClientLog(defaultOptions))
 }
 
-func unaryClientLog(defaultOption *option) grpc.UnaryClientInterceptor {
+func unaryClientLog(defaultOptions *options) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, nOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, nOpts)
+		var opt = mergeOptions(defaultOptions, nOpts)
 
 		opt.logger.Printf(ctx, "GRPC 调用接口: [%s - %s], 请求参数: [%v] \n", cc.Target(), method, req)
 

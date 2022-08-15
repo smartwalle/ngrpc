@@ -6,17 +6,17 @@ import (
 )
 
 func WithStreamClient(opts ...Option) grpc.DialOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		handler: defaultWrapper,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.WithChainStreamInterceptor(streamClientWrapper(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.WithChainStreamInterceptor(streamClientWrapper(defaultOptions))
 }
 
-func streamClientWrapper(defaultOption *option) grpc.StreamClientInterceptor {
+func streamClientWrapper(defaultOptions *options) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		var grpcOpts, nOpts = filterOptions(opts)
-		var opt = mergeOptions(defaultOption, nOpts)
+		var opt = mergeOptions(defaultOptions, nOpts)
 		ctx = outgoing(ctx, opt)
 		return streamer(ctx, desc, cc, method, grpcOpts...)
 	}

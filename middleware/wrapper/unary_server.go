@@ -6,16 +6,16 @@ import (
 )
 
 func WithUnaryServer(opts ...Option) grpc.ServerOption {
-	var defaultOption = &option{
+	var defaultOptions = &options{
 		handler: defaultWrapper,
 	}
-	defaultOption = mergeOptions(defaultOption, opts)
-	return grpc.ChainUnaryInterceptor(unaryServerWrapper(defaultOption))
+	defaultOptions = mergeOptions(defaultOptions, opts)
+	return grpc.ChainUnaryInterceptor(unaryServerWrapper(defaultOptions))
 }
 
-func unaryServerWrapper(opt *option) grpc.UnaryServerInterceptor {
+func unaryServerWrapper(opts *options) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		ctx = incoming(ctx, opt)
+		ctx = incoming(ctx, opts)
 		return handler(ctx, req)
 	}
 }
