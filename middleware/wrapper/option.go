@@ -8,19 +8,31 @@ import (
 
 type Handler func(ctx context.Context, md metadata.MD) (context.Context, metadata.MD)
 
+type ErrorWrapper func(err error) error
+
 type Option struct {
 	grpc.EmptyCallOption
 	apply func(*options)
 }
 
 type options struct {
-	handler Handler
+	handler      Handler
+	errorWrapper ErrorWrapper
 }
 
 func WithWrapper(h Handler) Option {
 	return Option{
 		apply: func(opts *options) {
 			opts.handler = h
+		},
+	}
+}
+
+// WithErrorWrapper 错误装饰器
+func WithErrorWrapper(f ErrorWrapper) Option {
+	return Option{
+		apply: func(opts *options) {
+			opts.errorWrapper = f
 		},
 	}
 }

@@ -20,7 +20,11 @@ func streamServerWrapper(opts *options) grpc.StreamServerInterceptor {
 			ServerStream: ss,
 			ctx:          nCtx,
 		}
-		return handler(srv, nStream)
+		var err = handler(srv, nStream)
+		if err != nil && opts.errorWrapper != nil {
+			return opts.errorWrapper(err)
+		}
+		return err
 	}
 }
 

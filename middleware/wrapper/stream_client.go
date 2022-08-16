@@ -18,6 +18,11 @@ func streamClientWrapper(defaultOptions *options) grpc.StreamClientInterceptor {
 		var grpcOpts, nOpts = filterOptions(opts)
 		var opt = mergeOptions(defaultOptions, nOpts)
 		ctx = outgoing(ctx, opt)
-		return streamer(ctx, desc, cc, method, grpcOpts...)
+
+		var stream, err = streamer(ctx, desc, cc, method, grpcOpts...)
+		if err != nil && opt.errorWrapper != nil {
+			return stream, opt.errorWrapper(err)
+		}
+		return stream, err
 	}
 }

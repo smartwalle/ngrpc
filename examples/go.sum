@@ -147,6 +147,8 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrfsX/uA88=
+github.com/smartwalle/errors v1.0.3 h1:UKy/BNUx2quqtoCbiL1zKXJlkJ4+tPNsJnvQrMo90f8=
+github.com/smartwalle/errors v1.0.3/go.mod h1:qfbmCF546OFTHs4/rfItY3El7nIZW92qsVsN7+RUVsA=
 github.com/smartwalle/etcd4go v1.0.10 h1:9zkKfhcrhI420e4uZLF3ftvZXGfEbo/3uPNN0ayjgug=
 github.com/smartwalle/etcd4go v1.0.10/go.mod h1:FQrVE+NhvXpXM3wdH+XykFrcolBH7qIJIxpJUAIexyQ=
 github.com/smartwalle/hash4go v1.0.4 h1:tt10SKfy6nrqJfA/rk8AvCRg3vs+857fNGoXGtn/LoU=

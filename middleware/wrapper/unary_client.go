@@ -18,6 +18,11 @@ func unaryClientWrapper(defaultOptions *options) grpc.UnaryClientInterceptor {
 		var grpcOpts, nOpts = filterOptions(opts)
 		var opt = mergeOptions(defaultOptions, nOpts)
 		ctx = outgoing(ctx, opt)
-		return invoker(ctx, method, req, reply, cc, grpcOpts...)
+
+		var err = invoker(ctx, method, req, reply, cc, grpcOpts...)
+		if err != nil && opt.errorWrapper != nil {
+			return opt.errorWrapper(err)
+		}
+		return err
 	}
 }

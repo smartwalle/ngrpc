@@ -25,10 +25,12 @@ type options struct {
 }
 
 // WithFilter 过滤 error
-func WithFilter(h Filter) Option {
-	return Option{apply: func(opts *options) {
-		opts.filter = h
-	}}
+func WithFilter(f Filter) Option {
+	return Option{
+		apply: func(opts *options) {
+			opts.filter = f
+		},
+	}
 }
 
 func mergeOptions(dOpts *options, opts []Option) *options {
