@@ -29,22 +29,22 @@ func (this *PickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 		return base.NewErrPicker(balancer.ErrNoSubConnAvailable)
 	}
 
-	var p = &picker{}
-	p.key = this.key
-	p.selector = ketama.New(8, this.h)
+	var picker = &Picker{}
+	picker.key = this.key
+	picker.selector = ketama.New(8, this.h)
 	for conn, connInfo := range info.ReadySCs {
-		p.selector.Add(connInfo.Address.Addr, conn, 1)
+		picker.selector.Add(connInfo.Address.Addr, conn, 1)
 	}
-	p.selector.Prepare()
-	return p
+	picker.selector.Prepare()
+	return picker
 }
 
-type picker struct {
+type Picker struct {
 	key      string
 	selector *ketama.Hash
 }
 
-func (this *picker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
+func (this *Picker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
 	var r balancer.PickResult
 	var value, _ = info.Ctx.Value(this.key).(string)
 	r.SubConn, _ = this.selector.Get(value).(balancer.SubConn)
