@@ -10,7 +10,7 @@ import (
 const Name = "ngrpc_balancer_ketama"
 
 // New 创建一致性 Hash 负载均衡器
-// 使用： grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, ketama.Name())),
+// 使用： grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, ketama.Name)),
 func New(key string, h func() hash.Hash32) balancer.Builder {
 	var b = base.NewBalancerBuilder(Name, &kPickerBuilder{key: key, h: h}, base.Config{HealthCheck: true})
 	balancer.Register(b)
