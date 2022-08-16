@@ -15,7 +15,7 @@ func main() {
 	var cfg = examples.Load("./cfg.yaml")
 	closer, _ := cfg.InitGlobalTracer("server")
 
-	log4go.SharedLogger().DisablePath()
+	log4go.SharedInstance().DisablePath()
 
 	var r = etcd.NewRegistry(examples.GetETCDClient())
 	var s, err = ngrpc.NewServer("grpc2", "hello", xid.NewMID().Hex(),
