@@ -16,7 +16,7 @@ type HelloService struct {
 }
 
 func (this *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.World, error) {
-	log4go.Println(ctx, "收到请求", in.Name)
+	log4go.Println("收到请求", in.Name)
 
 	var rsp = &proto.World{}
 	rsp.Message = fmt.Sprintf("收到来自 %s 的消息", in.Name)
