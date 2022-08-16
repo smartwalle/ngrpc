@@ -11,10 +11,10 @@ type Backoff func(context.Context, int) time.Duration
 
 type Option struct {
 	grpc.EmptyCallOption
-	apply func(*option)
+	apply func(*options)
 }
 
-type option struct {
+type options struct {
 	max         int
 	callTimeout time.Duration
 	codes       []codes.Code
@@ -28,37 +28,37 @@ func Disable() Option {
 
 // WithMax 设置最大重试次数
 func WithMax(max int) Option {
-	return Option{apply: func(opt *option) {
-		opt.max = max
+	return Option{apply: func(opts *options) {
+		opts.max = max
 	}}
 }
 
 // WithTimeout 设置超时时间
 func WithTimeout(timeout time.Duration) Option {
-	return Option{apply: func(opt *option) {
-		opt.callTimeout = timeout
+	return Option{apply: func(opts *options) {
+		opts.callTimeout = timeout
 	}}
 }
 
 // WithCodes 设置支持重试的错误 Code
 func WithCodes(retryCodes ...codes.Code) Option {
-	return Option{apply: func(opt *option) {
-		opt.codes = retryCodes
+	return Option{apply: func(opts *options) {
+		opts.codes = retryCodes
 	}}
 }
 
 // WithBackoff 设置重试时间延迟
 func WithBackoff(f Backoff) Option {
-	return Option{apply: func(opt *option) {
-		opt.backoff = f
+	return Option{apply: func(opts *options) {
+		opts.backoff = f
 	}}
 }
 
-func mergeOptions(dOpts *option, opts []Option) *option {
+func mergeOptions(dOpts *options, opts []Option) *options {
 	if len(opts) == 0 {
 		return dOpts
 	}
-	var nOpts = &option{}
+	var nOpts = &options{}
 	*nOpts = *dOpts
 	for _, f := range opts {
 		f.apply(nOpts)

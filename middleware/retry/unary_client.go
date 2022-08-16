@@ -10,7 +10,7 @@ import (
 
 // WithUnaryClient 客户端普通方法调用重试处理
 func WithUnaryClient(opts ...Option) grpc.DialOption {
-	var defaultOptions = &option{
+	var defaultOptions = &options{
 		max:         1,
 		callTimeout: 5 * time.Second,
 		codes:       []codes.Code{codes.ResourceExhausted, codes.Unavailable},
@@ -22,7 +22,7 @@ func WithUnaryClient(opts ...Option) grpc.DialOption {
 	return grpc.WithChainUnaryInterceptor(unaryClientRetry(defaultOptions))
 }
 
-func unaryClientRetry(defaultOptions *option) grpc.UnaryClientInterceptor {
+func unaryClientRetry(defaultOptions *options) grpc.UnaryClientInterceptor {
 	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		var grpcOpts, nOpts = filterOptions(opts)
 		var opt = mergeOptions(defaultOptions, nOpts)
@@ -59,7 +59,7 @@ func unaryClientRetry(defaultOptions *option) grpc.UnaryClientInterceptor {
 	}
 }
 
-func retryBackoff(i int, ctx context.Context, opts *option) error {
+func retryBackoff(i int, ctx context.Context, opts *options) error {
 	var waitTime time.Duration = 0
 	if i > 0 && opts.backoff != nil {
 		waitTime = opts.backoff(ctx, i)
@@ -76,7 +76,7 @@ func retryBackoff(i int, ctx context.Context, opts *option) error {
 	return nil
 }
 
-func callContext(ctx context.Context, opts *option) context.Context {
+func callContext(ctx context.Context, opts *options) context.Context {
 	var nCtx = ctx
 	if opts.callTimeout > 0 {
 		nCtx, _ = context.WithTimeout(nCtx, opts.callTimeout)
@@ -89,7 +89,7 @@ func isContextError(err error) bool {
 	return code == codes.DeadlineExceeded || code == codes.Canceled
 }
 
-func isRetriable(err error, callOption *option) bool {
+func isRetriable(err error, callOption *options) bool {
 	var errCode = status.Code(err)
 	if isContextError(err) {
 		return false
