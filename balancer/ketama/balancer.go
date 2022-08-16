@@ -10,39 +10,41 @@ import (
 const Name = "ngrpc_balancer_ketama"
 
 // New 创建一致性 Hash 负载均衡器
-// 使用： grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, ketama.Name)),
+//
+// 使用： grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, ketama.Name))
+//
 func New(key string, h func() hash.Hash32) balancer.Builder {
-	var b = base.NewBalancerBuilder(Name, &kPickerBuilder{key: key, h: h}, base.Config{HealthCheck: true})
+	var b = base.NewBalancerBuilder(Name, &PickerBuilder{key: key, h: h}, base.Config{HealthCheck: true})
 	balancer.Register(b)
 	return b
 }
 
-type kPickerBuilder struct {
+type PickerBuilder struct {
 	key string
 	h   func() hash.Hash32
 }
 
-func (this *kPickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
+func (this *PickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 	if len(info.ReadySCs) == 0 {
 		return base.NewErrPicker(balancer.ErrNoSubConnAvailable)
 	}
 
-	var picker = &kPicker{}
-	picker.key = this.key
-	picker.selector = ketama.New(8, this.h)
-	for conn, cInfo := range info.ReadySCs {
-		picker.selector.Add(cInfo.Address.Addr, conn, 1)
+	var p = &picker{}
+	p.key = this.key
+	p.selector = ketama.New(8, this.h)
+	for conn, connInfo := range info.ReadySCs {
+		p.selector.Add(connInfo.Address.Addr, conn, 1)
 	}
-	picker.selector.Prepare()
-	return picker
+	p.selector.Prepare()
+	return p
 }
 
-type kPicker struct {
+type picker struct {
 	key      string
 	selector *ketama.Hash
 }
 
-func (this *kPicker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
+func (this *picker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
 	var r balancer.PickResult
 	var value, _ = info.Ctx.Value(this.key).(string)
 	r.SubConn, _ = this.selector.Get(value).(balancer.SubConn)
