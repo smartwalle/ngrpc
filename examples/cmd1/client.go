@@ -7,14 +7,13 @@ import (
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
 	"github.com/smartwalle/ngrpc/registry/etcd"
-	"google.golang.org/grpc"
 	"time"
 )
 
 func main() {
 	var r = etcd.NewRegistry(examples.GetETCDClient())
 
-	var conn = ngrpc.Dial(r.BuildPath("grpc1", "hello", "cmd1"), grpc.WithInsecure(), ngrpc.WithTimeout(time.Second*3))
+	var conn = ngrpc.Dial(r.BuildPath("grpc1", "hello", "cmd1"), ngrpc.WithInsecure(), ngrpc.WithTimeout(time.Second*3))
 
 	var client = proto.NewHelloWorldClient(conn)
 

@@ -2,6 +2,7 @@ package ngrpc
 
 import (
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"time"
 )
 
@@ -25,6 +26,10 @@ func WithTimeout(timeout time.Duration) DialOption {
 	return DialOption{apply: func(opts *dialOptions) {
 		opts.timeout = timeout
 	}}
+}
+
+func WithInsecure() grpc.DialOption {
+	return grpc.WithTransportCredentials(insecure.NewCredentials())
 }
 
 func filterDialOptions(inOpts []grpc.DialOption) (grpcOptions []grpc.DialOption, dialOptions []DialOption) {
