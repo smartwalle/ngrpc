@@ -1,7 +1,7 @@
 package ketama
 
 import (
-	"github.com/smartwalle/hash4go/ketama"
+	"github.com/smartwalle/nhash/ketama"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/balancer/base"
 	"hash"
@@ -31,7 +31,7 @@ func (this *PickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 
 	var picker = &Picker{}
 	picker.key = this.key
-	picker.selector = ketama.New(8, this.h)
+	picker.selector = ketama.New[balancer.SubConn](ketama.WithSpots(8), ketama.WithHash(this.h))
 	for conn, connInfo := range info.ReadySCs {
 		picker.selector.Add(connInfo.Address.Addr, conn, 1)
 	}
@@ -41,12 +41,12 @@ func (this *PickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 
 type Picker struct {
 	key      string
-	selector *ketama.Hash
+	selector *ketama.Hash[balancer.SubConn]
 }
 
 func (this *Picker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
 	var r balancer.PickResult
 	var value, _ = info.Ctx.Value(this.key).(string)
-	r.SubConn, _ = this.selector.Get(value).(balancer.SubConn)
+	r.SubConn = this.selector.Get(value)
 	return r, nil
 }
