@@ -1,4 +1,4 @@
-module github.com/smartwalle/ngrpc/middleware/breaker/hystrix
+module github.com/smartwalle/ngrpc/interceptor/breaker/hystrix
 
 go 1.16
 

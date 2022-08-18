@@ -6,7 +6,7 @@ import (
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
-	"github.com/smartwalle/ngrpc/middleware/tracing"
+	"github.com/smartwalle/ngrpc/interceptor/tracing"
 	"github.com/smartwalle/ngrpc/registry/etcd"
 	"github.com/smartwalle/xid"
 )
