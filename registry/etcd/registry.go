@@ -46,25 +46,25 @@ func (this *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts
 
 func (this *Registry) watch(cc resolver.ClientConn) func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
 	return func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
-		var paths = watcher.Values()
-		this.update(cc, paths)
+		var values = watcher.Values()
+		this.update(cc, values)
 	}
 }
 
-func (this *Registry) update(cc resolver.ClientConn, paths map[string][]byte) {
-	var addrList = make([]resolver.Address, 0, len(paths))
-	for _, nValue := range paths {
-		var addr = resolver.Address{Addr: string(nValue)}
-		addrList = append(addrList, addr)
+func (this *Registry) update(cc resolver.ClientConn, values map[string][]byte) {
+	var addresses = make([]resolver.Address, 0, len(values))
+	for _, value := range values {
+		var addr = resolver.Address{Addr: string(value)}
+		addresses = append(addresses, addr)
 	}
-	cc.UpdateState(resolver.State{Addresses: addrList})
+	cc.UpdateState(resolver.State{Addresses: addresses})
 }
 
 func (this *Registry) Scheme() string {
 	return this.scheme
 }
 
-func (this *Registry) ResolveNow(option resolver.ResolveNowOptions) {
+func (this *Registry) ResolveNow(options resolver.ResolveNowOptions) {
 }
 
 func (this *Registry) Close() {
