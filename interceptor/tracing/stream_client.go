@@ -67,11 +67,11 @@ func streamClientTracing(defaultOptions *options) grpc.StreamClientInterceptor {
 
 type clientStream struct {
 	grpc.ClientStream
-	mu       sync.Mutex
-	finished bool
+	pCtx     context.Context
 	opt      *options
 	opName   string
-	pCtx     context.Context
+	mu       sync.Mutex
+	finished bool
 }
 
 func (this *clientStream) Header() (metadata.MD, error) {

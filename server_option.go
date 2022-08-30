@@ -6,45 +6,45 @@ import (
 
 type ServerOption struct {
 	grpc.EmptyServerOption
-	apply func(option *serverOption)
+	apply func(opts *serverOptions)
 }
 
-type serverOption struct {
-	registerTTL int64
+type serverOptions struct {
 	addr        string
+	registerTTL int64
 }
 
 func WithRegisterTTL(ttl int64) ServerOption {
-	return ServerOption{apply: func(opt *serverOption) {
-		opt.registerTTL = ttl
+	return ServerOption{apply: func(opts *serverOptions) {
+		opts.registerTTL = ttl
 	}}
 }
 
 func WithAddress(addr string) ServerOption {
-	return ServerOption{apply: func(opt *serverOption) {
-		opt.addr = addr
+	return ServerOption{apply: func(opts *serverOptions) {
+		opts.addr = addr
 	}}
 }
 
-func filterServerOptions(inOpts []grpc.ServerOption) (grpcOptions []grpc.ServerOption, serverOptions []ServerOption) {
+func mergeServerOptions(dOpts *serverOptions, opts []ServerOption) *serverOptions {
+	if len(opts) == 0 {
+		return dOpts
+	}
+	var nOpts = &serverOptions{}
+	*nOpts = *dOpts
+	for _, f := range opts {
+		f.apply(nOpts)
+	}
+	return nOpts
+}
+
+func filterServerOptions(inOpts []grpc.ServerOption) (grpcOptions []grpc.ServerOption, nOptions []ServerOption) {
 	for _, inOpt := range inOpts {
 		if opt, ok := inOpt.(ServerOption); ok {
-			serverOptions = append(serverOptions, opt)
+			nOptions = append(nOptions, opt)
 		} else {
 			grpcOptions = append(grpcOptions, inOpt)
 		}
 	}
-	return grpcOptions, serverOptions
-}
-
-func mergeServerOptions(serverOpt *serverOption, serverOptions []ServerOption) *serverOption {
-	if len(serverOptions) == 0 {
-		return serverOpt
-	}
-	var nOpt = &serverOption{}
-	*nOpt = *serverOpt
-	for _, f := range serverOptions {
-		f.apply(nOpt)
-	}
-	return nOpt
+	return grpcOptions, nOptions
 }

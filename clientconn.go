@@ -52,10 +52,10 @@ type DialFun func() (*grpc.ClientConn, error)
 
 type ClientPool struct {
 	dial     DialFun
+	connList []*grpc.ClientConn
+	mu       sync.Mutex
 	size     int32
 	next     int32
-	mu       sync.Mutex
-	connList []*grpc.ClientConn
 }
 
 func NewClientPool(size int32, fn DialFun) *ClientPool {

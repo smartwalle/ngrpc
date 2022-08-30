@@ -15,10 +15,10 @@ type Option struct {
 }
 
 type options struct {
+	backoff     Backoff
+	codes       []codes.Code
 	max         int
 	callTimeout time.Duration
-	codes       []codes.Code
-	backoff     Backoff
 }
 
 // Disable 禁用重试
