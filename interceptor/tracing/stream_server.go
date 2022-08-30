@@ -80,9 +80,9 @@ func traceServerStreamClose(ctx context.Context, opts *options, opName string, e
 type serverStream struct {
 	grpc.ServerStream
 	ctx    context.Context
+	pCtx   context.Context
 	opts   *options
 	opName string
-	pCtx   context.Context
 }
 
 func (this *serverStream) Context() context.Context {

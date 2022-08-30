@@ -15,10 +15,10 @@ const (
 )
 
 type Registry struct {
-	scheme   string
 	client   *etcd4go.Client
 	mu       *sync.Mutex
 	watchers map[string]*etcd4go.Watcher
+	scheme   string
 }
 
 func NewRegistry(client *clientv3.Client) *Registry {

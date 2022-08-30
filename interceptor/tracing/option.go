@@ -16,11 +16,11 @@ type Option struct {
 
 type options struct {
 	tracer         opentracing.Tracer
+	payloadMarshal PayloadMarshal
+	opName         OperationName
 	payload        bool
 	streamPayload  bool
-	payloadMarshal PayloadMarshal
 	disable        bool
-	opName         OperationName
 }
 
 // Disable 禁用追踪

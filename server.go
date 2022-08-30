@@ -8,30 +8,30 @@ import (
 )
 
 type Server struct {
-	opt      *serverOption
+	listener net.Listener
+	registry Registry
+	options  *serverOptions
+	server   *grpc.Server
 	domain   string
 	service  string
 	node     string
-	listener net.Listener
-	registry Registry
-	server   *grpc.Server
 }
 
 func NewServer(domain, service, node string, registry Registry, opts ...grpc.ServerOption) (*Server, error) {
-	var defaultOption = &serverOption{
+	var defaultOptions = &serverOptions{
 		registerTTL: 15,
 	}
 
-	var grpcOpts, serverOpts = filterServerOptions(opts)
-	var serverOpt = mergeServerOptions(defaultOption, serverOpts)
+	var grpcOpts, nOpts = filterServerOptions(opts)
+	var opt = mergeServerOptions(defaultOptions, nOpts)
 
-	var listener, err = listen(serverOpt.addr)
+	var listener, err = listen(opt.addr)
 	if err != nil {
 		return nil, err
 	}
 
 	var s = &Server{}
-	s.opt = serverOpt
+	s.options = opt
 	s.domain = domain
 	s.service = service
 	s.node = node
@@ -105,7 +105,7 @@ func (this *Server) Server() *grpc.Server {
 
 func (this *Server) Run() error {
 	if this.registry != nil {
-		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), this.opt.registerTTL)
+		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), this.options.registerTTL)
 	}
 	if err := this.server.Serve(this.listener); err != nil {
 		this.Stop()

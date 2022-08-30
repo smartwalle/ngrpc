@@ -20,8 +20,8 @@ func New(key string, h func() hash.Hash32) balancer.Builder {
 }
 
 type PickerBuilder struct {
-	key string
 	h   func() hash.Hash32
+	key string
 }
 
 func (this *PickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
@@ -40,8 +40,8 @@ func (this *PickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
 }
 
 type Picker struct {
-	key      string
 	selector *ketama.Hash[balancer.SubConn]
+	key      string
 }
 
 func (this *Picker) Pick(info balancer.PickInfo) (balancer.PickResult, error) {
