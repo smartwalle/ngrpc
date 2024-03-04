@@ -33,6 +33,6 @@ type serverStream struct {
 	ctx context.Context
 }
 
-func (this *serverStream) Context() context.Context {
-	return this.ctx
+func (stream *serverStream) Context() context.Context {
+	return stream.ctx
 }

@@ -12,11 +12,11 @@ type DialOption struct {
 }
 
 type dialOptions struct {
-	poolSize int32
+	poolSize int
 	timeout  time.Duration
 }
 
-func WithPoolSize(size int32) DialOption {
+func WithPoolSize(size int) DialOption {
 	return DialOption{apply: func(opts *dialOptions) {
 		opts.poolSize = size
 	}}

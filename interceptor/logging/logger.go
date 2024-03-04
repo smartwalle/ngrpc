@@ -10,8 +10,8 @@ type Logger interface {
 type nilLogger struct {
 }
 
-func (this *nilLogger) Println(ctx context.Context, args ...interface{}) {
+func (logger *nilLogger) Println(ctx context.Context, args ...interface{}) {
 }
 
-func (this *nilLogger) Printf(ctx context.Context, format string, args ...interface{}) {
+func (logger *nilLogger) Printf(ctx context.Context, format string, args ...interface{}) {
 }

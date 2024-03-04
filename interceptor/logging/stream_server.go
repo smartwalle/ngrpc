@@ -42,25 +42,25 @@ type serverStream struct {
 	opts *options
 }
 
-func (this *serverStream) SendMsg(m interface{}) error {
-	var err = this.ServerStream.SendMsg(m)
-	if this.opts.payload {
+func (stream *serverStream) SendMsg(m interface{}) error {
+	var err = stream.ServerStream.SendMsg(m)
+	if stream.opts.payload {
 		if err != nil {
-			this.opts.logger.Printf(this.Context(), "GRPC 流发送消息失败: [%v], 错误信息: [%v] \n", m, err)
+			stream.opts.logger.Printf(stream.Context(), "GRPC 流发送消息失败: [%v], 错误信息: [%v] \n", m, err)
 		} else {
-			this.opts.logger.Printf(this.Context(), "GRPC 流发送消息成功: [%v] \n", m)
+			stream.opts.logger.Printf(stream.Context(), "GRPC 流发送消息成功: [%v] \n", m)
 		}
 	}
 	return err
 }
 
-func (this *serverStream) RecvMsg(m interface{}) error {
-	var err = this.ServerStream.RecvMsg(m)
-	if this.opts.payload {
+func (stream *serverStream) RecvMsg(m interface{}) error {
+	var err = stream.ServerStream.RecvMsg(m)
+	if stream.opts.payload {
 		if err != nil {
-			this.opts.logger.Printf(this.Context(), "GRPC 流接收消息失败: [%v] \n", err)
+			stream.opts.logger.Printf(stream.Context(), "GRPC 流接收消息失败: [%v] \n", err)
 		} else {
-			this.opts.logger.Printf(this.Context(), "GRPC 流接收消息成功: [%v] \n", m)
+			stream.opts.logger.Printf(stream.Context(), "GRPC 流接收消息成功: [%v] \n", m)
 		}
 	}
 	return err

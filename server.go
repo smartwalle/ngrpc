@@ -72,62 +72,62 @@ func listen(addr string) (net.Listener, error) {
 	return listener, nil
 }
 
-func (this *Server) Name() string {
-	if this.registry != nil {
-		return this.registry.BuildPath(this.domain, this.service, this.node)
+func (s *Server) Name() string {
+	if s.registry != nil {
+		return s.registry.BuildPath(s.domain, s.service, s.node)
 	}
-	return filepath.Join(this.domain, this.service, this.node)
+	return filepath.Join(s.domain, s.service, s.node)
 }
 
-func (this *Server) Domain() string {
-	return this.domain
+func (s *Server) Domain() string {
+	return s.domain
 }
 
-func (this *Server) Service() string {
-	return this.service
+func (s *Server) Service() string {
+	return s.service
 }
 
-func (this *Server) Node() string {
-	return this.node
+func (s *Server) Node() string {
+	return s.node
 }
 
-func (this *Server) Addr() string {
-	return this.listener.Addr().String()
+func (s *Server) Addr() string {
+	return s.listener.Addr().String()
 }
 
-func (this *Server) Registry() Registry {
-	return this.registry
+func (s *Server) Registry() Registry {
+	return s.registry
 }
 
-func (this *Server) Server() *grpc.Server {
-	return this.server
+func (s *Server) Server() *grpc.Server {
+	return s.server
 }
 
-func (this *Server) Run() error {
-	if this.registry != nil {
-		this.registry.Register(context.Background(), this.domain, this.service, this.node, this.Addr(), this.options.registerTTL)
+func (s *Server) Run() error {
+	if s.registry != nil {
+		s.registry.Register(context.Background(), s.domain, s.service, s.node, s.Addr(), s.options.registerTTL)
 	}
-	if err := this.server.Serve(this.listener); err != nil {
-		this.Stop()
+	if err := s.server.Serve(s.listener); err != nil {
+		s.Stop()
 		return err
 	}
 	return nil
 }
 
-func (this *Server) Stop() {
-	if this.registry != nil {
-		this.registry.Unregister(context.Background(), this.domain, this.service, this.node)
+func (s *Server) Stop() {
+	if s.registry != nil {
+		s.registry.Unregister(context.Background(), s.domain, s.service, s.node)
 	}
-	this.server.Stop()
+	s.server.Stop()
 }
 
-func (this *Server) GracefulStop() {
-	if this.registry != nil {
-		this.registry.Unregister(context.Background(), this.domain, this.service, this.node)
+func (s *Server) GracefulStop() {
+	if s.registry != nil {
+		s.registry.Unregister(context.Background(), s.domain, s.service, s.node)
 	}
-	this.server.GracefulStop()
+	s.server.GracefulStop()
 }
 
-func (this *Server) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
-	this.server.RegisterService(desc, impl)
+func (s *Server) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {
+	s.server.RegisterService(desc, impl)
 }

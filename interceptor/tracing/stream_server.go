@@ -85,22 +85,22 @@ type serverStream struct {
 	opName string
 }
 
-func (this *serverStream) Context() context.Context {
-	return this.ctx
+func (stream *serverStream) Context() context.Context {
+	return stream.ctx
 }
 
-func (this *serverStream) SendMsg(m interface{}) error {
-	var err = this.ServerStream.SendMsg(m)
-	if err != io.EOF && this.pCtx != nil {
-		traceServerStreamPayload(this.pCtx, this.opts.tracer, "Send", this.opName, this.opts.payloadMarshal(m), err)
+func (stream *serverStream) SendMsg(m interface{}) error {
+	var err = stream.ServerStream.SendMsg(m)
+	if err != io.EOF && stream.pCtx != nil {
+		traceServerStreamPayload(stream.pCtx, stream.opts.tracer, "Send", stream.opName, stream.opts.payloadMarshal(m), err)
 	}
 	return err
 }
 
-func (this *serverStream) RecvMsg(m interface{}) error {
-	var err = this.ServerStream.RecvMsg(m)
-	if err != io.EOF && this.pCtx != nil {
-		traceServerStreamPayload(this.pCtx, this.opts.tracer, "Recv", this.opName, this.opts.payloadMarshal(m), err)
+func (stream *serverStream) RecvMsg(m interface{}) error {
+	var err = stream.ServerStream.RecvMsg(m)
+	if err != io.EOF && stream.pCtx != nil {
+		traceServerStreamPayload(stream.pCtx, stream.opts.tracer, "Recv", stream.opName, stream.opts.payloadMarshal(m), err)
 	}
 	return err
 }

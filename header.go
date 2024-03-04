@@ -43,32 +43,32 @@ func HeaderFromOutgoing(ctx context.Context) *Header {
 	return h
 }
 
-func (this *Header) Raw() metadata.MD {
-	return this.md
+func (h *Header) Raw() metadata.MD {
+	return h.md
 }
 
-func (this *Header) Set(key, value string) {
-	this.md.Set(key, value)
+func (h *Header) Set(key, value string) {
+	h.md.Set(key, value)
 }
 
-func (this *Header) Get(key string) string {
-	var vs = this.md.Get(key)
+func (h *Header) Get(key string) string {
+	var vs = h.md.Get(key)
 	if len(vs) > 0 {
 		return vs[0]
 	}
 	return ""
 }
 
-func (this *Header) Len() int {
-	return this.md.Len()
+func (h *Header) Len() int {
+	return h.md.Len()
 }
 
-func (this *Header) Del(key string) {
-	delete(this.md, strings.ToLower(key))
+func (h *Header) Del(key string) {
+	delete(h.md, strings.ToLower(key))
 }
 
-func (this *Header) ForeachKey(handler func(key, val string) error) error {
-	for key, values := range this.md {
+func (h *Header) ForeachKey(handler func(key, val string) error) error {
+	for key, values := range h.md {
 		for _, value := range values {
 			if err := handler(key, value); err != nil {
 				return err
@@ -78,6 +78,6 @@ func (this *Header) ForeachKey(handler func(key, val string) error) error {
 	return nil
 }
 
-func (this *Header) Context(ctx context.Context) context.Context {
-	return metadata.NewOutgoingContext(ctx, this.md)
+func (h *Header) Context(ctx context.Context) context.Context {
+	return metadata.NewOutgoingContext(ctx, h.md)
 }

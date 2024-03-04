@@ -15,16 +15,16 @@ var (
 
 type ClientConn struct {
 	pool  *ClientPool
-	retry int32
+	retry int
 }
 
-func (this *ClientConn) Prepare() {
-	this.pool.Prepare()
+func (cc *ClientConn) Prepare() {
+	cc.pool.Prepare()
 }
 
-func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...grpc.CallOption) error {
-	for i := int32(0); i <= this.retry; i++ {
-		var conn, err = this.pool.Get()
+func (cc *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...grpc.CallOption) error {
+	for i := 0; i <= cc.retry; i++ {
+		var conn, err = cc.pool.Get()
 		if err != nil {
 			return err
 		}
@@ -33,9 +33,9 @@ func (this *ClientConn) Invoke(ctx context.Context, method string, args, reply i
 	return ErrServerNotFound
 }
 
-func (this *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-	for i := int32(0); i <= this.retry; i++ {
-		var conn, err = this.pool.Get()
+func (cc *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	for i := 0; i <= cc.retry; i++ {
+		var conn, err = cc.pool.Get()
 		if err != nil {
 			return nil, err
 		}
@@ -44,8 +44,8 @@ func (this *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, me
 	return nil, ErrServerNotFound
 }
 
-func (this *ClientConn) Close() {
-	this.pool.Close()
+func (cc *ClientConn) Close() {
+	cc.pool.Close()
 }
 
 type DialFun func() (*grpc.ClientConn, error)
@@ -54,11 +54,11 @@ type ClientPool struct {
 	dial     DialFun
 	connList []*grpc.ClientConn
 	mu       sync.Mutex
-	size     int32
-	next     int32
+	size     int
+	next     uint32
 }
 
-func NewClientPool(size int32, fn DialFun) *ClientPool {
+func NewClientPool(size int, fn DialFun) *ClientPool {
 	var p = &ClientPool{}
 	p.dial = fn
 	p.size = size
@@ -66,27 +66,29 @@ func NewClientPool(size int32, fn DialFun) *ClientPool {
 	return p
 }
 
-func (this *ClientPool) Prepare() {
-	this.mu.Lock()
-	defer this.mu.Unlock()
+func (p *ClientPool) Prepare() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
-	for idx := range this.connList {
-		var conn = this.connList[idx]
+	for idx := range p.connList {
+		var conn = p.connList[idx]
 		if conn == nil {
-			nConn, _ := this.dial()
+			nConn, _ := p.dial()
 			if nConn != nil {
-				this.connList[idx] = nConn
+				p.connList[idx] = nConn
 			}
 		}
 	}
 }
 
-func (this *ClientPool) Get() (*grpc.ClientConn, error) {
-	var next = atomic.AddInt32(&this.next, 1)
-	var index = next % this.size
+func (p *ClientPool) Get() (*grpc.ClientConn, error) {
+	var index = int(atomic.AddUint32(&p.next, 1)-1) % p.size
 
-	var conn = this.connList[index]
-	if conn != nil && this.checkState(conn) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	var conn = p.connList[index]
+	if conn != nil && p.checkState(conn) {
 		return conn, nil
 	}
 
@@ -94,23 +96,20 @@ func (this *ClientPool) Get() (*grpc.ClientConn, error) {
 		conn.Close()
 	}
 
-	this.mu.Lock()
-	defer this.mu.Unlock()
-
-	conn = this.connList[index]
-	if conn != nil && this.checkState(conn) {
+	conn = p.connList[index]
+	if conn != nil && p.checkState(conn) {
 		return conn, nil
 	}
 
-	conn, err := this.dial()
+	conn, err := p.dial()
 	if err != nil {
 		return nil, err
 	}
-	this.connList[index] = conn
+	p.connList[index] = conn
 	return conn, nil
 }
 
-func (this *ClientPool) checkState(conn *grpc.ClientConn) bool {
+func (p *ClientPool) checkState(conn *grpc.ClientConn) bool {
 	var state = conn.GetState()
 	switch state {
 	case connectivity.TransientFailure, connectivity.Shutdown:
@@ -119,10 +118,10 @@ func (this *ClientPool) checkState(conn *grpc.ClientConn) bool {
 	return true
 }
 
-func (this *ClientPool) Close() {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	for _, conn := range this.connList {
+func (p *ClientPool) Close() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	for _, conn := range p.connList {
 		if conn == nil {
 			continue
 		}

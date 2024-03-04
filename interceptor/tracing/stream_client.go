@@ -74,48 +74,48 @@ type clientStream struct {
 	finished bool
 }
 
-func (this *clientStream) Header() (metadata.MD, error) {
-	var header, err = this.ClientStream.Header()
+func (stream *clientStream) Header() (metadata.MD, error) {
+	var header, err = stream.ClientStream.Header()
 	if err != nil {
-		this.finish(err)
+		stream.finish(err)
 	}
 	return header, err
 }
 
-func (this *clientStream) SendMsg(m interface{}) error {
-	var err = this.ClientStream.SendMsg(m)
-	if this.pCtx != nil {
-		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Send", this.opName, this.opt.payloadMarshal(m), err)
+func (stream *clientStream) SendMsg(m interface{}) error {
+	var err = stream.ClientStream.SendMsg(m)
+	if stream.pCtx != nil {
+		traceClientStreamPayload(stream.pCtx, stream.opt.tracer, "Send", stream.opName, stream.opt.payloadMarshal(m), err)
 	}
 	if err != nil {
-		this.finish(err)
+		stream.finish(err)
 	}
 	return err
 }
 
-func (this *clientStream) CloseSend() error {
-	var err = this.ClientStream.CloseSend()
-	this.finish(err)
+func (stream *clientStream) CloseSend() error {
+	var err = stream.ClientStream.CloseSend()
+	stream.finish(err)
 	return err
 }
 
-func (this *clientStream) RecvMsg(m interface{}) error {
-	var err = this.ClientStream.RecvMsg(m)
-	if this.pCtx != nil && this.finished == false {
-		traceClientStreamPayload(this.pCtx, this.opt.tracer, "Recv", this.opName, this.opt.payloadMarshal(m), err)
+func (stream *clientStream) RecvMsg(m interface{}) error {
+	var err = stream.ClientStream.RecvMsg(m)
+	if stream.pCtx != nil && stream.finished == false {
+		traceClientStreamPayload(stream.pCtx, stream.opt.tracer, "Recv", stream.opName, stream.opt.payloadMarshal(m), err)
 	}
 	if err != nil {
-		this.finish(err)
+		stream.finish(err)
 	}
 	return err
 }
 
-func (this *clientStream) finish(err error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	if this.finished == false {
-		var _, nSpan, _ = clientSpanFromContext(this.Context(), this.opt.tracer, fmt.Sprintf("[GRPC Client Stream Close] %s", this.opName))
+func (stream *clientStream) finish(err error) {
+	stream.mu.Lock()
+	defer stream.mu.Unlock()
+	if stream.finished == false {
+		var _, nSpan, _ = clientSpanFromContext(stream.Context(), stream.opt.tracer, fmt.Sprintf("[GRPC Client Stream Close] %s", stream.opName))
 		finish(nSpan, err)
-		this.finished = true
+		stream.finished = true
 	}
 }
