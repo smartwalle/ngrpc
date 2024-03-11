@@ -35,7 +35,7 @@ func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
 
 func (r *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
 	//var key = target.Scheme + "://" + filepath.Join(target.Authority, target.Endpoint)
-	var key = r.buildPath(target.Authority, target.Endpoint)
+	var key = target.URL.String()
 	var watcher = r.client.Watch(context.Background(), key, r.watch(cc), clientv3.WithPrefix())
 	r.mu.Lock()
 	r.update(cc, watcher.Values())
