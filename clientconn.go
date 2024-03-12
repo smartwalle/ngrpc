@@ -44,8 +44,8 @@ func (cc *ClientConn) NewStream(ctx context.Context, desc *grpc.StreamDesc, meth
 	return nil, ErrServerNotFound
 }
 
-func (cc *ClientConn) Close() {
-	cc.pool.Close()
+func (cc *ClientConn) Close() error {
+	return cc.pool.Close()
 }
 
 type DialFun func() (*grpc.ClientConn, error)
@@ -119,7 +119,7 @@ func (p *ClientPool) checkState(conn *grpc.ClientConn) bool {
 	return true
 }
 
-func (p *ClientPool) Close() {
+func (p *ClientPool) Close() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	for _, conn := range p.conns {
@@ -128,4 +128,5 @@ func (p *ClientPool) Close() {
 		}
 		conn.Close()
 	}
+	return nil
 }

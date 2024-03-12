@@ -19,7 +19,7 @@ var (
 
 func init() {
 	var config = clientv3.Config{}
-	config.Endpoints = []string{"192.168.1.77:2379"}
+	config.Endpoints = []string{"192.168.1.9:2379"}
 	//config.Endpoints = []string{"127.0.0.1:2379"}
 	var err error
 	etcdClient, err = clientv3.New(config)

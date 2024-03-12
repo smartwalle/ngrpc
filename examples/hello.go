@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/opentracing/opentracing-go"
-	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/net4go"
 	ngrpc "github.com/smartwalle/net4go/grpc"
 	"github.com/smartwalle/ngrpc/examples/proto"
@@ -16,7 +15,7 @@ type HelloService struct {
 }
 
 func (this *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.World, error) {
-	log4go.Println("收到请求", in.Name)
+	//log.Println("收到请求", in.Name)
 
 	var rsp = &proto.World{}
 	rsp.Message = fmt.Sprintf("收到来自 %s 的消息", in.Name)
@@ -47,7 +46,7 @@ func (this *HelloService) Stream(s proto.HelloWorld_StreamServer) error {
 	//		return err
 	//	}
 	//
-	//	log4go.Println(s.Context(), "收到流消息")
+	//	log.Println(s.Context(), "收到流消息")
 	//
 	//	var w = &proto.World{}
 	//	w.Message = fmt.Sprintf("收到来自 %s 的消息", m.Name)
