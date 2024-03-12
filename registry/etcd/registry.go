@@ -3,7 +3,7 @@ package etcd
 import (
 	"bytes"
 	"context"
-	"github.com/smartwalle/etcd4go"
+	"github.com/smartwalle/netcd"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
 	"path/filepath"
@@ -15,9 +15,9 @@ const (
 )
 
 type Registry struct {
-	client   *etcd4go.Client
+	client   *netcd.Client
 	mu       *sync.Mutex
-	watchers map[string]*etcd4go.Watcher
+	watchers map[string]*netcd.Watcher
 	scheme   string
 }
 
@@ -26,9 +26,9 @@ func NewRegistry(client *clientv3.Client) *Registry {
 }
 
 func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
-	var r = &Registry{scheme: scheme, client: etcd4go.NewClient(client)}
+	var r = &Registry{scheme: scheme, client: netcd.NewClient(client)}
 	r.mu = &sync.Mutex{}
-	r.watchers = make(map[string]*etcd4go.Watcher)
+	r.watchers = make(map[string]*netcd.Watcher)
 	resolver.Register(r)
 	return r
 }
@@ -44,8 +44,8 @@ func (r *Registry) Build(target resolver.Target, cc resolver.ClientConn, opts re
 	return r, nil
 }
 
-func (r *Registry) watch(cc resolver.ClientConn) func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
-	return func(watcher *etcd4go.Watcher, event, key, path string, value []byte) {
+func (r *Registry) watch(cc resolver.ClientConn) func(watcher *netcd.Watcher, event, key, path string, value []byte) {
+	return func(watcher *netcd.Watcher, event, key, path string, value []byte) {
 		var values = watcher.Values()
 		r.update(cc, values)
 	}

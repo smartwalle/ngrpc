@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/opentracing/opentracing-go"
-	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/balancer/ketama"
 	"github.com/smartwalle/ngrpc/examples"
@@ -15,6 +14,7 @@ import (
 	"github.com/smartwalle/ngrpc/registry/etcd"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"log"
 	"time"
 )
 
@@ -77,7 +77,7 @@ func main() {
 	//		grpc.WithInsecure(),
 	//		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, bb.Name())),
 	//		wrapper.WithUnaryClient(wrapper.WithWrapper(func(ctx context.Context, md metadata.MD) (context.Context, metadata.MD) {
-	//			var logId = log4go.MustGetId(ctx)
+	//			var logId = log.MustGetId(ctx)
 	//			md.Set("log-id", logId)
 	//			return ctx, md
 	//		})),
@@ -115,7 +115,7 @@ func doStream(client proto.HelloWorldClient) {
 
 			var c = 0
 			for {
-				log4go.Println(stream.Context(), "发送流消息")
+				log.Println(stream.Context(), "发送流消息")
 
 				if err := stream.Send(&proto.Hello{Name: fmt.Sprintf("Stream %d-%d", i, c)}); err != nil {
 					return
@@ -142,17 +142,17 @@ func doUnary(client proto.HelloWorldClient, id string) {
 		header.Set("user-id", "1")
 		header.Set("user-id", "2")
 
-		log4go.Println(ctx, "开始请求", id)
+		log.Println(ctx, "开始请求", id)
 		ctx = context.WithValue(ctx, "player_id", id)
 		client.Call(header.Context(ctx), &proto.Hello{Name: fmt.Sprintf("Coffee " + id)})
-		//log4go.Println(ctx, "请求完成", err)
+		//log.Println(ctx, "请求完成", err)
 
 		span, _ = opentracing.StartSpanFromContext(ctx, "xxxxx")
 		span.LogKV("ddd", "ww")
 		span.Finish()
 
 		//if err != nil {
-		//	log4go.Println(err, rsp)
+		//	log.Println(err, rsp)
 		//}
 
 		time.Sleep(time.Second * 1)

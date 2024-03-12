@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
 	"github.com/smartwalle/ngrpc/registry/etcd"
 	"github.com/smartwalle/xid"
+	"log"
 )
 
 func main() {
@@ -23,10 +23,10 @@ func main() {
 	proto.RegisterHelloWorldServer(s, &Service1{})
 
 	go func() {
-		log4go.Println(nil, "服务地址:", s.Addr(), s.Name())
+		log.Println(nil, "服务地址:", s.Addr(), s.Name())
 		var err = s.Run()
 		if err != nil {
-			log4go.Println(nil, "启动服务发生错误:", err)
+			log.Println(nil, "启动服务发生错误:", err)
 		}
 	}()
 
@@ -42,7 +42,7 @@ type Service1 struct {
 }
 
 func (this *Service1) Call(ctx context.Context, in *proto.Hello) (*proto.World, error) {
-	log4go.Println(ctx, "收到请求", in.Name)
+	log.Println(ctx, "收到请求", in.Name)
 
 	var rsp = &proto.World{}
 	rsp.Message = fmt.Sprintf("收到来自 %s 的消息", in.Name)

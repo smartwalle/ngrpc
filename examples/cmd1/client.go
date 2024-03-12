@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/smartwalle/log4go"
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
 	"github.com/smartwalle/ngrpc/registry/etcd"
+	"log"
 	"time"
 )
 
@@ -20,10 +20,10 @@ func main() {
 	for i := 0; i < 100; i++ {
 		rsp, err := client.Call(context.Background(), &proto.Hello{Name: "Coffee"})
 		if err != nil {
-			log4go.Println(context.Background(), err)
+			log.Println(context.Background(), err)
 			return
 		}
-		log4go.Println(context.Background(), i, rsp.Message)
+		log.Println(context.Background(), i, rsp.Message)
 
 		time.Sleep(time.Second * 1)
 	}
