@@ -18,6 +18,7 @@ type Registry struct {
 	client   *netcd.Client
 	mu       *sync.Mutex
 	watchers map[string]*netcd.Watcher
+	leaseIds map[string][]int64
 	scheme   string
 }
 
@@ -29,6 +30,7 @@ func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
 	var r = &Registry{scheme: scheme, client: netcd.NewClient(client)}
 	r.mu = &sync.Mutex{}
 	r.watchers = make(map[string]*netcd.Watcher)
+	r.leaseIds = make(map[string][]int64)
 	resolver.Register(r)
 	return r
 }
@@ -78,12 +80,27 @@ func (r *Registry) Close() {
 }
 
 func (r *Registry) Register(ctx context.Context, domain, service, node, addr string, ttl int64) (key string, err error) {
-	_, key, err = r.client.Register(ctx, r.BuildPath(domain, service, node), addr, ttl)
+	var leaseId = int64(0)
+	key = r.BuildPath(domain, service, node)
+	leaseId, key, err = r.client.Register(ctx, key, addr, ttl)
+	if leaseId > 0 {
+		r.mu.Lock()
+		r.leaseIds[key] = append(r.leaseIds[key], leaseId)
+		r.mu.Unlock()
+	}
 	return key, err
 }
 
 func (r *Registry) Unregister(ctx context.Context, domain, service, node string) (err error) {
-	return r.client.Unregister(ctx, r.BuildPath(domain, service, node))
+	var key = r.BuildPath(domain, service, node)
+	r.mu.Lock()
+	var leaseIds = r.leaseIds[key]
+	delete(r.leaseIds, key)
+	r.mu.Unlock()
+	for _, leaseId := range leaseIds {
+		r.client.Revoke(ctx, leaseId)
+	}
+	return r.client.Unregister(ctx, key)
 }
 
 func (r *Registry) BuildPath(domain, service, node string) string {
