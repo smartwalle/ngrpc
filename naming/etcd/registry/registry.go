@@ -37,7 +37,7 @@ func (r *Registry) Scheme() string {
 func (r *Registry) Register(ctx context.Context, domain, service, node, addr string, ttl int64) (string, error) {
 	var key = r.BuildPath(domain, service, node)
 
-	var lease, err = internal.NewLease(ctx, r.client, ttl)
+	var lease, err = internal.NewLease(r.client, ttl)
 	if err != nil {
 		return "", err
 	}

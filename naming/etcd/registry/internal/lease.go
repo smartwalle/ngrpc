@@ -11,9 +11,9 @@ type Lease struct {
 	cancel context.CancelFunc
 }
 
-func NewLease(ctx context.Context, client *clientv3.Client, ttl int64) (*Lease, error) {
+func NewLease(client *clientv3.Client, ttl int64) (*Lease, error) {
 	var leaseID clientv3.LeaseID
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	if ttl > 0 {
 		grantRsp, err := client.Grant(ctx, ttl)
 		if err != nil {
