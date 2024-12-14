@@ -11,7 +11,7 @@ import (
 	"github.com/smartwalle/ngrpc/examples/proto"
 	"github.com/smartwalle/ngrpc/interceptor/tracing"
 	"github.com/smartwalle/ngrpc/interceptor/wrapper"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/resolver"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"log"
@@ -24,9 +24,10 @@ func main() {
 
 	var bb = ketama.New("player_id", nil)
 
-	var r = etcd.NewRegistry(examples.GetETCDClient())
+	var builder = resolver.NewBuilder(examples.GetETCDClient())
 
-	var conn = ngrpc.Dial(r.BuildPath("grpc2", "hello", ""),
+	var conn = ngrpc.Dial(
+		builder.BuildPath("grpc2", "hello", ""),
 		ngrpc.WithPoolSize(3),
 		grpc.WithBlock(),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, bb.Name())),
@@ -87,8 +88,10 @@ func main() {
 
 	examples.Wait()
 
-	r.Close()
+	conn.Close()
 	closer.Close()
+
+	examples.Wait()
 }
 
 func doStream(client proto.HelloWorldClient) {

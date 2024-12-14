@@ -5,7 +5,7 @@ import (
 	"github.com/smartwalle/net4go"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/registry"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -23,8 +23,8 @@ func main() {
 	var service = "hello"
 	var node = "pool"
 
-	var registry = etcd.NewRegistry(examples.GetETCDClient())
-	registry.Register(context.Background(), domain, service, node, listener.Addr().String(), 10)
+	var r = registry.NewRegistry(examples.GetETCDClient())
+	r.Register(context.Background(), domain, service, node, listener.Addr().String(), 10)
 
 	var server = grpc.NewServer()
 	proto.RegisterHelloWorldServer(server, &examples.HelloService{})
@@ -43,6 +43,5 @@ func main() {
 	server.Stop()
 
 	// 取消注册服务
-	registry.Unregister(context.Background(), domain, service, node)
-	registry.Close()
+	r.Unregister(context.Background(), domain, service, node)
 }

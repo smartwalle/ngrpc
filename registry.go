@@ -10,6 +10,4 @@ type Registry interface {
 	Unregister(ctx context.Context, domain, service, node string) (err error)
 
 	BuildPath(domain, service, node string) string
-
-	Close()
 }

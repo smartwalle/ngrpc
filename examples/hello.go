@@ -14,7 +14,7 @@ type HelloService struct {
 	proto.UnimplementedHelloWorldServer
 }
 
-func (this *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.World, error) {
+func (hs *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.World, error) {
 	//log.Println("收到请求", in.Name)
 
 	var rsp = &proto.World{}
@@ -27,12 +27,12 @@ func (this *HelloService) Call(ctx context.Context, in *proto.Hello) (*proto.Wor
 	return rsp, nil
 }
 
-func (this *HelloService) Stream(s proto.HelloWorld_StreamServer) error {
+func (hs *HelloService) Stream(s proto.HelloWorld_StreamServer) error {
 	fmt.Println("begin...")
 
 	var ns = NewStream(s)
 
-	var nSess = ngrpc.NewSession(ns, this)
+	var nSess = ngrpc.NewSession(ns, hs)
 
 	fmt.Println(nSess.Conn())
 
@@ -57,7 +57,7 @@ func (this *HelloService) Stream(s proto.HelloWorld_StreamServer) error {
 	return err
 }
 
-func (this *HelloService) OnMessage(sess net4go.Session, p net4go.Packet) {
+func (hs *HelloService) OnMessage(sess net4go.Session, p net4go.Packet) {
 	fmt.Println("OnMessage", p)
 
 	var h = p.(*proto.Hello)
@@ -68,7 +68,7 @@ func (this *HelloService) OnMessage(sess net4go.Session, p net4go.Packet) {
 	}
 }
 
-func (this *HelloService) OnClose(sess net4go.Session, err error) {
+func (hs *HelloService) OnClose(sess net4go.Session, err error) {
 	fmt.Println("OnClose", err)
 }
 
@@ -87,23 +87,23 @@ func NewStream(s proto.HelloWorld_StreamServer) *Stream {
 	return ns
 }
 
-func (this *Stream) SendPacket(packet net4go.Packet) error {
-	return this.s.Send(packet.(*proto.World))
+func (s *Stream) SendPacket(packet net4go.Packet) error {
+	return s.s.Send(packet.(*proto.World))
 }
 
-func (this *Stream) RecvPacket() (net4go.Packet, error) {
-	return this.s.Recv()
+func (s *Stream) RecvPacket() (net4go.Packet, error) {
+	return s.s.Recv()
 }
 
-func (this *Stream) OnClose(err error) {
+func (s *Stream) OnClose(err error) {
 	fmt.Println("stream close")
-	this.doneOnce.Do(func() {
-		close(this.done)
-		this.err = err
+	s.doneOnce.Do(func() {
+		close(s.done)
+		s.err = err
 	})
 }
 
-func (this *Stream) Wait() error {
-	<-this.done
-	return this.err
+func (s *Stream) Wait() error {
+	<-s.done
+	return s.err
 }

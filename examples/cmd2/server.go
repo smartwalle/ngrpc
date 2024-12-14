@@ -6,7 +6,7 @@ import (
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
 	"github.com/smartwalle/ngrpc/interceptor/tracing"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/registry"
 	"github.com/smartwalle/xid"
 	"log"
 )
@@ -15,7 +15,8 @@ func main() {
 	var cfg = examples.Load("./cfg.yaml")
 	closer, _ := cfg.InitGlobalTracer("server")
 
-	var r = etcd.NewRegistry(examples.GetETCDClient())
+	var r = registry.NewRegistry(examples.GetETCDClient())
+
 	var s, err = ngrpc.NewServer("grpc2", "hello", xid.NewMID().Hex(),
 		r,
 		ngrpc.WithRegisterTTL(5),
@@ -56,6 +57,6 @@ func main() {
 
 	// 关闭服务
 	s.Stop()
-	r.Close()
+
 	closer.Close()
 }

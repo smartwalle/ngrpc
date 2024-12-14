@@ -6,15 +6,16 @@ import (
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/resolver"
 	"google.golang.org/grpc"
 	"time"
 )
 
 func main() {
-	var r = etcd.NewRegistry(examples.GetETCDClient())
+	var builder = resolver.NewBuilder(examples.GetETCDClient())
 
-	var conn = ngrpc.Dial(r.BuildPath("grpc3", "s2", ""),
+	var conn = ngrpc.Dial(builder.BuildPath("grpc3", "s2", ""),
+		grpc.WithResolvers(builder),
 		ngrpc.WithPoolSize(3),
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
@@ -34,5 +35,7 @@ func main() {
 
 	examples.Wait()
 
-	r.Close()
+	conn.Close()
+
+	examples.Wait()
 }

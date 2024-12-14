@@ -6,13 +6,13 @@ import (
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/registry"
 	"github.com/smartwalle/xid"
 	"log"
 )
 
 func main() {
-	var r = etcd.NewRegistry(examples.GetETCDClient())
+	var r = registry.NewRegistry(examples.GetETCDClient())
 	var s, err = ngrpc.NewServer("grpc3", "s1", xid.NewMID().Hex(),
 		r,
 		ngrpc.WithRegisterTTL(5),
@@ -34,7 +34,8 @@ func main() {
 
 	// 关闭服务
 	s.Stop()
-	r.Close()
+
+	examples.Wait()
 }
 
 type Service1 struct {

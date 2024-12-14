@@ -51,11 +51,12 @@ func (cc *ClientConn) Close() error {
 type DialFun func() (*grpc.ClientConn, error)
 
 type ClientPool struct {
-	dial  DialFun
-	conns []*grpc.ClientConn
-	mu    sync.Mutex
-	size  int
-	next  uint32
+	dial   DialFun
+	conns  []*grpc.ClientConn
+	mu     *sync.Mutex
+	size   int
+	next   uint32
+	closed bool
 }
 
 func NewClientPool(size int, fn DialFun) *ClientPool {
@@ -63,12 +64,17 @@ func NewClientPool(size int, fn DialFun) *ClientPool {
 	p.dial = fn
 	p.size = size
 	p.conns = make([]*grpc.ClientConn, p.size)
+	p.mu = &sync.Mutex{}
+	p.closed = false
 	return p
 }
 
 func (p *ClientPool) Prepare() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if p.closed {
+		return
+	}
 
 	for idx := range p.conns {
 		var conn = p.conns[idx]
@@ -94,6 +100,9 @@ func (p *ClientPool) Get() (*grpc.ClientConn, error) {
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	if p.closed {
+		return nil, grpc.ErrClientConnClosing
+	}
 
 	conn = p.conns[index]
 	if conn != nil {
@@ -122,6 +131,7 @@ func (p *ClientPool) checkState(conn *grpc.ClientConn) bool {
 func (p *ClientPool) Close() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	p.closed = true
 	for _, conn := range p.conns {
 		if conn == nil {
 			continue

@@ -6,34 +6,42 @@ import (
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/resolver"
 	"google.golang.org/grpc"
 	"log"
 	"time"
 )
 
 func main() {
-	var r = etcd.NewRegistry(examples.GetETCDClient())
+	var builder = resolver.NewBuilder(examples.GetETCDClient())
 
 	var conn = ngrpc.Dial(
-		r.BuildPath("grpc1", "hello", "cmd1"),
+		builder.BuildPath("grpc1", "hello", ""),
+		grpc.WithResolvers(builder),
 		ngrpc.WithInsecure(),
 		ngrpc.WithTimeout(time.Second*3),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "round_robin"}`)),
 	)
 
-	var client = proto.NewHelloWorldClient(conn)
+	go func() {
+		var client = proto.NewHelloWorldClient(conn)
 
-	for i := 0; i < 100; i++ {
-		rsp, err := client.Call(context.Background(), &proto.Hello{Name: "Coffee"})
-		if err != nil {
-			log.Println(context.Background(), err)
-			return
+		for i := 0; i < 100; i++ {
+			rsp, err := client.Call(context.Background(), &proto.Hello{Name: "Coffee"})
+			if err != nil {
+				log.Println(context.Background(), err)
+				time.Sleep(time.Second * 1)
+				continue
+			}
+			log.Println(context.Background(), i, rsp.Message)
+
+			time.Sleep(time.Second * 1)
 		}
-		log.Println(context.Background(), i, rsp.Message)
+	}()
 
-		time.Sleep(time.Second * 1)
-	}
+	examples.Wait()
 
-	r.Close()
+	conn.Close()
+
+	examples.Wait()
 }

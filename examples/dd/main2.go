@@ -6,7 +6,8 @@ import (
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/registry"
+	"github.com/smartwalle/ngrpc/naming/etcd/resolver"
 	"github.com/smartwalle/xid"
 	"google.golang.org/grpc"
 	"log"
@@ -14,7 +15,7 @@ import (
 )
 
 func main() {
-	var r = etcd.NewRegistry(examples.GetETCDClient())
+	var r = registry.NewRegistry(examples.GetETCDClient())
 	var s, err = ngrpc.NewServer("grpc3", "s2", xid.NewMID().Hex(),
 		r,
 		ngrpc.WithRegisterTTL(5),
@@ -23,7 +24,10 @@ func main() {
 		return
 	}
 
-	var conn = ngrpc.Dial(r.BuildPath("grpc3", "s1", ""),
+	var builder = resolver.NewBuilder(examples.GetETCDClient())
+
+	var conn = ngrpc.Dial(builder.BuildPath("grpc3", "s1", ""),
+		grpc.WithResolvers(builder),
 		ngrpc.WithPoolSize(6),
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
@@ -49,7 +53,9 @@ func main() {
 
 	// 关闭服务
 	s.Stop()
-	r.Close()
+
+	examples.Wait()
+
 }
 
 type Service2 struct {

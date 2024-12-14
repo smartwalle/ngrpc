@@ -5,7 +5,7 @@ import (
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
 	"github.com/smartwalle/ngrpc/examples/proto"
-	"github.com/smartwalle/ngrpc/registry/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/resolver"
 	"google.golang.org/grpc"
 	"log"
 	"sync"
@@ -18,17 +18,18 @@ type Conn interface {
 }
 
 func main() {
-	var registry = etcd.NewRegistry(examples.GetETCDClient())
+	var builder = resolver.NewBuilder(examples.GetETCDClient())
 
 	var domain = "grpc"
 	var service = "hello"
 	var node = "pool"
 
-	var target = registry.BuildPath(domain, service, node)
+	var target = builder.BuildPath(domain, service, node)
 
 	var conn Conn
 	conn, _ = grpc.Dial(
 		target,
+		grpc.WithResolvers(builder),
 		ngrpc.WithInsecure(),
 		ngrpc.WithTimeout(time.Second*3),
 	)
@@ -37,6 +38,7 @@ func main() {
 
 	conn = ngrpc.Dial(
 		target,
+		grpc.WithResolvers(builder),
 		ngrpc.WithInsecure(),
 		ngrpc.WithTimeout(time.Second*3),
 		ngrpc.WithPoolSize(1),
@@ -46,6 +48,7 @@ func main() {
 
 	conn = ngrpc.Dial(
 		target,
+		grpc.WithResolvers(builder),
 		ngrpc.WithInsecure(),
 		ngrpc.WithTimeout(time.Second*3),
 		ngrpc.WithPoolSize(10),
@@ -55,6 +58,7 @@ func main() {
 
 	conn = ngrpc.Dial(
 		target,
+		grpc.WithResolvers(builder),
 		ngrpc.WithInsecure(),
 		ngrpc.WithTimeout(time.Second*3),
 		ngrpc.WithPoolSize(20),
@@ -64,7 +68,6 @@ func main() {
 
 	select {}
 
-	registry.Close()
 }
 
 func request(comment string, conn grpc.ClientConnInterface) {
