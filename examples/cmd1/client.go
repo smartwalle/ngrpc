@@ -14,10 +14,10 @@ import (
 
 func main() {
 	var builder = resolver.NewBuilder(examples.GetETCDClient())
+	builder.Register()
 
 	var conn = ngrpc.Dial(
 		builder.BuildPath("grpc1", "hello", ""),
-		grpc.WithResolvers(builder),
 		ngrpc.WithInsecure(),
 		ngrpc.WithTimeout(time.Second*3),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "round_robin"}`)),

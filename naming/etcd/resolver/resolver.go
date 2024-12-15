@@ -43,6 +43,10 @@ func (b *Builder) Scheme() string {
 	return b.scheme
 }
 
+func (b *Builder) Register() {
+	resolver.Register(b)
+}
+
 func (b *Builder) BuildPath(domain, service, node string) string {
 	return b.buildPath(domain, service, node)
 }
