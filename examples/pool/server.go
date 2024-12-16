@@ -43,5 +43,5 @@ func main() {
 	server.Stop()
 
 	// 取消注册服务
-	r.Unregister(context.Background(), domain, service, node)
+	r.Deregister(context.Background(), domain, service, node)
 }

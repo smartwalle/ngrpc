@@ -116,14 +116,14 @@ func (s *Server) Run() error {
 
 func (s *Server) Stop() {
 	if s.registry != nil {
-		s.registry.Unregister(context.Background(), s.domain, s.service, s.node)
+		s.registry.Deregister(context.Background(), s.domain, s.service, s.node)
 	}
 	s.server.Stop()
 }
 
 func (s *Server) GracefulStop() {
 	if s.registry != nil {
-		s.registry.Unregister(context.Background(), s.domain, s.service, s.node)
+		s.registry.Deregister(context.Background(), s.domain, s.service, s.node)
 	}
 	s.server.GracefulStop()
 }
