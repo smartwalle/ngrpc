@@ -1,11 +1,9 @@
 package registry
 
 import (
-	"bytes"
 	"context"
 	"github.com/smartwalle/ngrpc/naming/etcd/internal"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	"path/filepath"
 	"sync"
 )
 
@@ -65,22 +63,5 @@ func (r *Registry) Deregister(ctx context.Context, domain, service, node string)
 }
 
 func (r *Registry) BuildPath(domain, service, node string) string {
-	return r.buildPath(domain, service, node)
-}
-
-func (r *Registry) buildPath(paths ...string) string {
-	var nPath = filepath.Join(paths...)
-
-	if len(nPath) > 0 && nPath[0] == '/' {
-		nPath = nPath[1:]
-	}
-
-	var buf = bytes.NewBufferString(r.scheme)
-	buf.WriteString("://")
-	buf.WriteString(nPath)
-
-	if len(nPath) > 0 && nPath[len(nPath)-1] != '/' {
-		buf.WriteString("/")
-	}
-	return buf.String()
+	return internal.BuildPath(r.scheme, domain, service, node)
 }

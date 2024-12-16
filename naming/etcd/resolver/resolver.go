@@ -1,12 +1,10 @@
 package resolver
 
 import (
-	"bytes"
 	"context"
 	"github.com/smartwalle/ngrpc/naming/etcd/internal"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
-	"path/filepath"
 )
 
 type Builder struct {
@@ -48,24 +46,7 @@ func (b *Builder) Register() {
 }
 
 func (b *Builder) BuildPath(domain, service, node string) string {
-	return b.buildPath(domain, service, node)
-}
-
-func (b *Builder) buildPath(paths ...string) string {
-	var nPath = filepath.Join(paths...)
-
-	if len(nPath) > 0 && nPath[0] == '/' {
-		nPath = nPath[1:]
-	}
-
-	var buf = bytes.NewBufferString(b.scheme)
-	buf.WriteString("://")
-	buf.WriteString(nPath)
-
-	if len(nPath) > 0 && nPath[len(nPath)-1] != '/' {
-		buf.WriteString("/")
-	}
-	return buf.String()
+	return internal.BuildPath(b.scheme, domain, service, node)
 }
 
 type Resolver struct {
