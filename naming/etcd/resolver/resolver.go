@@ -3,7 +3,7 @@ package resolver
 import (
 	"bytes"
 	"context"
-	"github.com/smartwalle/ngrpc/naming/etcd"
+	"github.com/smartwalle/ngrpc/naming/etcd/internal"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
 	"path/filepath"
@@ -15,7 +15,7 @@ type Builder struct {
 }
 
 func NewBuilder(client *clientv3.Client) *Builder {
-	return NewBuilderWithScheme(etcd.Scheme, client)
+	return NewBuilderWithScheme(internal.Scheme, client)
 }
 
 func NewBuilderWithScheme(scheme string, client *clientv3.Client) *Builder {

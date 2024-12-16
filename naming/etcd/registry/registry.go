@@ -3,8 +3,7 @@ package registry
 import (
 	"bytes"
 	"context"
-	"github.com/smartwalle/ngrpc/naming/etcd"
-	"github.com/smartwalle/ngrpc/naming/etcd/registry/internal"
+	"github.com/smartwalle/ngrpc/naming/etcd/internal"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"path/filepath"
 	"sync"
@@ -18,7 +17,7 @@ type Registry struct {
 }
 
 func NewRegistry(client *clientv3.Client) *Registry {
-	return NewRegistryWithScheme(etcd.Scheme, client)
+	return NewRegistryWithScheme(internal.Scheme, client)
 }
 
 func NewRegistryWithScheme(scheme string, client *clientv3.Client) *Registry {
