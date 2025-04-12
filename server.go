@@ -103,29 +103,25 @@ func (s *Server) Server() *grpc.Server {
 	return s.server
 }
 
-func (s *Server) Run() error {
+func (s *Server) Start(ctx context.Context) (err error) {
 	if s.registry != nil {
-		s.registry.Register(context.Background(), s.domain, s.service, s.node, s.Addr(), s.options.registerTTL)
+		if _, err = s.registry.Register(ctx, s.domain, s.service, s.node, s.Addr(), s.options.registerTTL); err != nil {
+			return err
+		}
 	}
-	if err := s.server.Serve(s.listener); err != nil {
-		s.Stop()
+	if err = s.server.Serve(s.listener); err != nil {
+		s.Stop(ctx)
 		return err
 	}
 	return nil
 }
 
-func (s *Server) Stop() {
+func (s *Server) Stop(ctx context.Context) (err error) {
 	if s.registry != nil {
-		s.registry.Deregister(context.Background(), s.domain, s.service, s.node)
-	}
-	s.server.Stop()
-}
-
-func (s *Server) GracefulStop() {
-	if s.registry != nil {
-		s.registry.Deregister(context.Background(), s.domain, s.service, s.node)
+		err = s.registry.Deregister(ctx, s.domain, s.service, s.node)
 	}
 	s.server.GracefulStop()
+	return err
 }
 
 func (s *Server) RegisterService(desc *grpc.ServiceDesc, impl interface{}) {

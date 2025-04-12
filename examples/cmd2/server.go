@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/smartwalle/ngrpc"
 	"github.com/smartwalle/ngrpc/examples"
@@ -47,7 +48,7 @@ func main() {
 
 	go func() {
 		log.Println(nil, "服务地址:", s.Addr(), s.Name())
-		var err = s.Run()
+		var err = s.Start(context.Background())
 		if err != nil {
 			log.Println(nil, "启动服务发生错误:", err)
 		}
@@ -56,7 +57,7 @@ func main() {
 	examples.Wait()
 
 	// 关闭服务
-	s.Stop()
+	s.Stop(context.Background())
 
 	closer.Close()
 }
