@@ -42,7 +42,7 @@ func main() {
 	// 关闭服务
 	s.Stop()
 	// 取消注册服务
-	r.Deregister(context.Background(), "grpc1", "hello", node)
+	r.Unregister(context.Background(), "grpc1", "hello", node)
 
 	examples.Wait()
 }

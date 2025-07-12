@@ -118,7 +118,7 @@ func (s *Server) Start(ctx context.Context) (err error) {
 
 func (s *Server) Stop(ctx context.Context) (err error) {
 	if s.registry != nil {
-		err = s.registry.Deregister(ctx, s.domain, s.service, s.node)
+		err = s.registry.Unregister(ctx, s.domain, s.service, s.node)
 	}
 	s.server.GracefulStop()
 	return err

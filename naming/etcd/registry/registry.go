@@ -48,7 +48,7 @@ func (r *Registry) Register(ctx context.Context, domain, service, node, addr str
 	return key, nil
 }
 
-func (r *Registry) Deregister(ctx context.Context, domain, service, node string) error {
+func (r *Registry) Unregister(ctx context.Context, domain, service, node string) error {
 	var key = r.BuildPath(domain, service, node)
 
 	r.mu.Lock()
